@@ -1,0 +1,3299 @@
+<!DOCTYPE html>
+<html lang="tr"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxMDc2NDAxMDk4ODU5NTA5NjA1OSIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzA0ZWI2MzExYzQ0NzUwNjJfaW5kZXguaHRtbC04NTAifSwiZXhwIjoxNzk1MjUzNzgzLCJpYXQiOjE3OTUyNTAxODMsImFsZyI6IlJTMjU2In0.BMZmxduDHvJXFD9W9IRkzGZsDHKTr6YLiiAgsS-GVM1frRzy80ChBEogDSyCNKopmx-gMl0x0IklpOALpucrKOPNA-o2FMEAy33mlwtyG4znFnoBnw37N7AQcEQCc9zf0azp0_Cuby5pb1mPjr_rQ-I_wQiPE2-Yz1HAdMYyqxTfAsSoeV91Gkjb-n9U6Uz2qgHVbS0z74uaoQm26x8fYs8mWU8pNTFQYayZOEnG_ReTpRJ392fcghszQyCudi1Yk_6mAQUZxFd_Q3ReJ1M4VTrB0g6MUJcKQhDANsin4FSdVawTXMpLA5XVxZBs_ySLBCU3TVe7zRX5afLPvBGDSw","c_04eb6311c4475062_index.html-850")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.i=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.extensions="";var l=0,t=null,r=null,q=[],F=new TextEncoder,
+G=new TextDecoder;c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*
+16|0;return(f==="x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;
+(g=t)==null||g.postMessage(a)}};Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  const OVERLAY_SELECTOR =
+    'dialog[open], [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="combobox"]';
+
+  function isVisibleOverlay(element) {
+    if (element.closest('[hidden], [aria-hidden="true"], [inert]')) {
+      return false;
+    }
+    if (window.getComputedStyle(element).visibility === 'hidden') {
+      return false;
+    }
+    for (let cur = element; cur; cur = cur.parentElement) {
+      if (window.getComputedStyle(cur).display === 'none') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function hasOpenOverlay() {
+    const candidates = document.querySelectorAll(OVERLAY_SELECTOR);
+    for (let i = 0; i < candidates.length; i++) {
+      if (isVisibleOverlay(candidates[i])) {
+        return true;
+      }
+    }
+    try {
+      if (document.querySelector('[popover]:popover-open')) {
+        return true;
+      }
+    } catch (e) {
+      // Ignore engines that do not support :popover-open.
+    }
+    return false;
+  }
+
+  function isNonEmptySearchInput(target) {
+    return (
+      Boolean(target) &&
+      target.tagName === 'INPUT' &&
+      typeof target.type === 'string' &&
+      target.type.toLowerCase() === 'search' &&
+      typeof target.value === 'string' &&
+      target.value.length > 0
+    );
+  }
+
+  function shouldIgnoreEscape(event) {
+    return (
+      event.key !== 'Escape' ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.isComposing ||
+      event.repeat ||
+      event.keyCode === 229 ||
+      isNonEmptySearchInput(event.target)
+    );
+  }
+
+  let shouldIgnoreCaptureState = false;
+
+  window.addEventListener(
+    'keydown',
+    function(event) {
+      if (event.key === 'Escape') {
+        shouldIgnoreCaptureState =
+          hasOpenOverlay() || isNonEmptySearchInput(event.target);
+      }
+    },
+    {capture: true},
+  );
+
+  window.addEventListener('keydown', function(event) {
+    if (
+      shouldIgnoreEscape(event) ||
+      event.defaultPrevented ||
+      shouldIgnoreCaptureState
+    ) {
+      return;
+    }
+    const wasBlockedOnCapture = shouldIgnoreCaptureState;
+    queueMicrotask(function() {
+      if (event.defaultPrevented || wasBlockedOnCapture) {
+        return;
+      }
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({'type': 'escapeKey'}, '*');
+      }
+    });
+  });
+})();</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çiz ve Gol At - Futbol Oyunu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <style>
+        /* Temel sayfa ve dokunmatik etkileşim ayarları */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #062815;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        .font-game {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        #pitchCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        @keyframes goalPop {
+            0% { transform: scale(0.55) rotate(-3deg); opacity: 0; }
+            60% { transform: scale(1.12) rotate(1.5deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .animate-goal {
+            animation: goalPop 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.bottom-3{bottom:0.75rem}.left-1\/2{left:50%}.z-20{z-index:20}.z-30{z-index:30}.z-40{z-index:40}.my-auto{margin-top:auto;margin-bottom:auto}.mb-1{margin-bottom:0.25rem}.mb-1\.5{margin-bottom:0.375rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-5{margin-bottom:1.25rem}.ml-1{margin-left:0.25rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-8{height:2rem}.h-3{height:0.75rem}.max-h-\[85vh\]{max-height:85vh}.w-8{width:2rem}.w-full{width:100%}.w-3{width:0.75rem}.min-w-0{min-width:0px}.max-w-lg{max-width:32rem}.max-w-sm{max-width:24rem}.max-w-xl{max-width:36rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.whitespace-nowrap{white-space:nowrap}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-amber-400{--tw-border-opacity:1;border-color:rgb(251 191 36 / var(--tw-border-opacity, 1))}.border-amber-400\/40{border-color:rgb(251 191 36 / 0.4)}.border-emerald-400\/20{border-color:rgb(52 211 153 / 0.2)}.border-emerald-400\/25{border-color:rgb(52 211 153 / 0.25)}.border-emerald-400\/30{border-color:rgb(52 211 153 / 0.3)}.border-emerald-500\/20{border-color:rgb(16 185 129 / 0.2)}.border-emerald-500\/25{border-color:rgb(16 185 129 / 0.25)}.border-emerald-500\/30{border-color:rgb(16 185 129 / 0.3)}.border-emerald-500\/35{border-color:rgb(16 185 129 / 0.35)}.border-emerald-600\/50{border-color:rgb(5 150 105 / 0.5)}.border-white\/15{border-color:rgb(255 255 255 / 0.15)}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138 / var(--tw-border-opacity, 1))}.bg-amber-400{--tw-bg-opacity:1;background-color:rgb(251 191 36 / var(--tw-bg-opacity, 1))}.bg-amber-500\/20{background-color:rgb(245 158 11 / 0.2)}.bg-amber-500\/25{background-color:rgb(245 158 11 / 0.25)}.bg-black\/55{background-color:rgb(0 0 0 / 0.55)}.bg-black\/60{background-color:rgb(0 0 0 / 0.6)}.bg-black\/75{background-color:rgb(0 0 0 / 0.75)}.bg-black\/80{background-color:rgb(0 0 0 / 0.8)}.bg-emerald-800{--tw-bg-opacity:1;background-color:rgb(6 95 70 / var(--tw-bg-opacity, 1))}.bg-emerald-800\/80{background-color:rgb(6 95 70 / 0.8)}.bg-emerald-900\/50{background-color:rgb(6 78 59 / 0.5)}.bg-emerald-900\/55{background-color:rgb(6 78 59 / 0.55)}.bg-emerald-900\/70{background-color:rgb(6 78 59 / 0.7)}.bg-emerald-900\/80{background-color:rgb(6 78 59 / 0.8)}.bg-emerald-950{--tw-bg-opacity:1;background-color:rgb(2 44 34 / var(--tw-bg-opacity, 1))}.bg-emerald-950\/90{background-color:rgb(2 44 34 / 0.9)}.bg-emerald-950\/95{background-color:rgb(2 44 34 / 0.95)}.bg-gradient-to-b{background-image:linear-gradient(to bottom, var(--tw-gradient-stops))}.from-amber-400{--tw-gradient-from:#fbbf24 var(--tw-gradient-from-position);--tw-gradient-to:rgb(251 191 36 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-amber-600{--tw-gradient-to:#d97706 var(--tw-gradient-to-position)}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.pr-1{padding-right:0.25rem}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.tracking-wider{letter-spacing:0.05em}.text-amber-200{--tw-text-opacity:1;color:rgb(253 230 138 / var(--tw-text-opacity, 1))}.text-amber-200\/90{color:rgb(253 230 138 / 0.9)}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-300\/90{color:rgb(252 211 77 / 0.9)}.text-emerald-100{--tw-text-opacity:1;color:rgb(209 250 229 / var(--tw-text-opacity, 1))}.text-emerald-100\/85{color:rgb(209 250 229 / 0.85)}.text-emerald-200{--tw-text-opacity:1;color:rgb(167 243 208 / var(--tw-text-opacity, 1))}.text-emerald-200\/80{color:rgb(167 243 208 / 0.8)}.text-emerald-300\/75{color:rgb(110 231 183 / 0.75)}.text-emerald-300\/80{color:rgb(110 231 183 / 0.8)}.text-emerald-300\/85{color:rgb(110 231 183 / 0.85)}.text-emerald-950{--tw-text-opacity:1;color:rgb(2 44 34 / var(--tw-text-opacity, 1))}.text-sky-300{--tw-text-opacity:1;color:rgb(125 211 252 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-yellow-400{--tw-text-opacity:1;color:rgb(250 204 21 / var(--tw-text-opacity, 1))}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.drop-shadow-\[0_6px_0_rgba\(0\2c 0\2c 0\2c 0\.85\)\]{--tw-drop-shadow:drop-shadow(0 6px 0 rgba(0,0,0,0.85));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:border-emerald-400:hover{--tw-border-opacity:1;border-color:rgb(52 211 153 / var(--tw-border-opacity, 1))}.hover\:bg-amber-500\/35:hover{background-color:rgb(245 158 11 / 0.35)}.hover\:bg-emerald-700:hover{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.hover\:brightness-105:hover{--tw-brightness:brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\:border-amber-400:focus{--tw-border-opacity:1;border-color:rgb(251 191 36 / var(--tw-border-opacity, 1))}.focus\:border-sky-400:focus{--tw-border-opacity:1;border-color:rgb(56 189 248 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}@media (min-width: 640px){.sm\:inline{display:inline}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:gap-4{gap:1rem}.sm\:p-5{padding:1.25rem}.sm\:p-6{padding:1.5rem}.sm\:px-5{padding-left:1.25rem;padding-right:1.25rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-7xl{font-size:4.5rem;line-height:1}.sm\:text-base{font-size:1rem;line-height:1.5rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}.sm\:text-xs{font-size:0.75rem;line-height:1rem}}@media (min-width: 768px){.md\:inline{display:inline}.md\:text-8xl{font-size:6rem;line-height:1}}</style></head>
+<body class="bg-emerald-950 text-white flex flex-col">
+    <!-- Üst Skor ve Bölüm Paneli -->
+    <header class="w-full px-2.5 sm:px-5 py-2 bg-emerald-950/90 border-b border-emerald-400/20 flex items-center justify-between gap-2 z-20 shrink-0">
+        <div class="flex items-center gap-2 min-w-0">
+            <span class="font-game font-bold text-sm sm:text-lg text-amber-300 truncate">
+                ⚽ ÇİZ &amp; GOL AT
+            </span>
+            <span id="levelBadge" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-800/80 text-emerald-200 border border-emerald-500/30 whitespace-nowrap">Bölüm 1</span>
+            <span id="levelTitleLabel" class="hidden md:inline text-xs text-emerald-300/85 truncate">Galatasaray · İlk Şut</span>
+        </div>
+
+        <div class="flex items-center gap-2.5 sm:gap-4 text-xs sm:text-sm font-semibold shrink-0">
+            <div class="flex items-center gap-1" title="Kalan Şut Hakkı">
+                <span class="text-emerald-300/80 hidden sm:inline">Hak:</span>
+                <div id="shotsContainer" class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-full border bg-amber-400 border-amber-200 shadow-sm"></span><span class="inline-block w-3 h-3 rounded-full border bg-amber-400 border-amber-200 shadow-sm"></span><span class="inline-block w-3 h-3 rounded-full border bg-amber-400 border-amber-200 shadow-sm"></span><span class="inline-block w-3 h-3 rounded-full border bg-amber-400 border-amber-200 shadow-sm"></span></div>
+            </div>
+
+            <div class="bg-emerald-900/80 px-2.5 py-1 rounded-xl border border-emerald-500/25">
+                <span class="text-emerald-300/80 text-xs">Skor:</span>
+                <span id="scoreDisplay" class="font-game font-bold text-amber-300 ml-1">0</span>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+                <button id="btnDeviceSwitch" type="button" class="px-2.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 border border-emerald-400/25 text-xs font-semibold transition cursor-pointer" title="Cihaz Modunu Değiştir">
+                    <span id="deviceBadge">📱 Mobil</span>
+                </button>
+                <button id="btnLevels" type="button" class="px-2.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 border border-emerald-400/25 text-xs font-semibold transition cursor-pointer">
+                    Bölümler
+                </button>
+                <button id="btnRestart" type="button" class="px-2.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 border border-emerald-400/25 text-xs font-semibold transition cursor-pointer" title="Bölümü Sıfırla">
+                    ↻
+                </button>
+                <button id="btnDownload" type="button" class="px-2.5 py-1.5 rounded-xl bg-amber-500/25 hover:bg-amber-500/35 border border-amber-400/40 text-amber-200 text-xs font-semibold transition cursor-pointer" title="Oyunu HTML Olarak İndir">
+                    ⬇ İndir
+                </button>
+                <button id="btnSound" type="button" class="px-2.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 border border-emerald-400/25 text-xs font-semibold transition cursor-pointer" title="Ses Aç/Kapat">
+                    <span id="iconSoundOn">🔊</span>
+                    <span id="iconSoundOff" class="hidden">🔇</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Saha Tuvali ve Katmanlar -->
+    <main class="relative flex-1 w-full overflow-hidden">
+        <canvas id="pitchCanvas" width="1185" height="977"></canvas>
+
+        <!-- Başlangıç Ekranı: Mobil mi oynayacaksın PC mi? & Mod / Takım Seçimi -->
+        <div id="startDeviceModal" class="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 z-40 overflow-y-auto">
+            <div class="max-w-xl w-full bg-emerald-950/95 border border-emerald-400/30 rounded-3xl p-5 sm:p-6 shadow-2xl my-auto">
+                <div class="text-center mb-4">
+                    <div class="text-xs uppercase tracking-wider text-amber-300/90 font-semibold mb-1">
+                        Çiz &amp; Gol At Turnuva Stadyumu
+                    </div>
+                    <h1 class="font-game font-bold text-2xl sm:text-3xl text-white">
+                        Mobil mi oynican PC mi?
+                    </h1>
+                    <p class="text-xs sm:text-sm text-emerald-200/80 mt-1">
+                        Cihazını seç, Süper Lig veya Avrupa takımını belirle ve tek başına ya da 2 Player turnuvada sahaya çık!
+                    </p>
+                </div>
+
+                <!-- Mobil / PC Seçim Butonları -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <button id="selectMobileBtn" type="button" class="p-3.5 rounded-2xl border-2 border-amber-400 bg-amber-500/20 text-white flex flex-col items-center gap-1 transition cursor-pointer">
+                        <span class="text-2xl">📱</span>
+                        <span class="font-game font-bold text-base">MOBİL</span>
+                        <span class="text-[11px] text-amber-200/90">Dokunmatik Çizim &amp; Geniş Dokunuş</span>
+                    </button>
+                    <button id="selectPcBtn" type="button" class="p-3.5 rounded-2xl border-2 border-emerald-600/50 bg-emerald-900/50 text-emerald-100 hover:border-emerald-400 flex flex-col items-center gap-1 transition cursor-pointer">
+                        <span class="text-2xl">💻</span>
+                        <span class="font-game font-bold text-base">PC</span>
+                        <span class="text-[11px] text-emerald-200/80">Fare ile Hassas Çizim</span>
+                    </button>
+                </div>
+
+                <!-- Oyun Modu: Tek Kişilik Bölümler veya 2 Player Turnuva -->
+                <div class="grid grid-cols-2 gap-2.5 mb-4">
+                    <button id="modeSoloBtn" type="button" class="py-2.5 px-3 rounded-2xl border border-amber-400 bg-amber-500/20 text-amber-200 font-semibold text-xs sm:text-sm transition cursor-pointer">
+                        ⚽ Tek Kişilik Bölümler
+                    </button>
+                    <button id="mode2pBtn" type="button" class="py-2.5 px-3 rounded-2xl border border-emerald-600/50 bg-emerald-900/50 text-emerald-100 hover:border-emerald-400 font-semibold text-xs sm:text-sm transition cursor-pointer">
+                        🏆 2 Player Turnuva
+                    </button>
+                </div>
+
+                <!-- Lig Filtresi & Oyuncu 1 / Oyuncu 2 Takım Seçimi -->
+                <div class="bg-emerald-900/55 border border-emerald-500/25 rounded-2xl p-3.5 mb-4">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <span class="text-xs font-semibold text-emerald-200">Takım Seçimi</span>
+                        <div class="flex items-center gap-1.5">
+                            <button id="leagueAllBtn" type="button" class="px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-400 text-emerald-950 cursor-pointer">Tümü</button>
+                            <button id="leagueSuperBtn" type="button" class="px-2.5 py-1 rounded-xl text-xs font-semibold bg-emerald-800 text-emerald-100 hover:bg-emerald-700 cursor-pointer">Süper Lig</button>
+                            <button id="leagueEuroBtn" type="button" class="px-2.5 py-1 rounded-xl text-xs font-semibold bg-emerald-800 text-emerald-100 hover:bg-emerald-700 cursor-pointer">Avrupa</button>
+                        </div>
+                    </div>
+
+                    <div id="teamSelectorsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="p1TeamSelect" class="block text-xs font-semibold text-amber-300 mb-1">
+                                Oyuncu 1 Takımı
+                            </label>
+                            <select id="p1TeamSelect" class="w-full px-3 py-2 rounded-xl bg-emerald-950 border border-emerald-500/35 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"><option value="gs" selected="">Galatasaray (Süper Lig)</option><option value="fb">Fenerbahçe (Süper Lig)</option><option value="bjk">Beşiktaş (Süper Lig)</option><option value="ts">Trabzonspor (Süper Lig)</option><option value="basaksehir">Başakşehir (Süper Lig)</option><option value="samsun">Samsunspor (Süper Lig)</option><option value="rma">Real Madrid (Avrupa)</option><option value="bar">Barcelona (Avrupa)</option><option value="mci">Manchester City (Avrupa)</option><option value="liv">Liverpool (Avrupa)</option><option value="bay">Bayern Münih (Avrupa)</option><option value="int">Inter Milan (Avrupa)</option></select>
+                        </div>
+                        <div id="p2TeamBox" class="hidden">
+                            <label for="p2TeamSelect" class="block text-xs font-semibold text-sky-300 mb-1">
+                                Oyuncu 2 Takımı
+                            </label>
+                            <select id="p2TeamSelect" class="w-full px-3 py-2 rounded-xl bg-emerald-950 border border-emerald-500/35 text-xs sm:text-sm text-white focus:outline-none focus:border-sky-400"><option value="gs">Galatasaray (Süper Lig)</option><option value="fb">Fenerbahçe (Süper Lig)</option><option value="bjk">Beşiktaş (Süper Lig)</option><option value="ts">Trabzonspor (Süper Lig)</option><option value="basaksehir">Başakşehir (Süper Lig)</option><option value="samsun">Samsunspor (Süper Lig)</option><option value="rma" selected="">Real Madrid (Avrupa)</option><option value="bar">Barcelona (Avrupa)</option><option value="mci">Manchester City (Avrupa)</option><option value="liv">Liverpool (Avrupa)</option><option value="bay">Bayern Münih (Avrupa)</option><option value="int">Inter Milan (Avrupa)</option></select>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="startMatchBtn" type="button" class="w-full py-3.5 px-5 rounded-2xl font-game font-bold text-base sm:text-lg bg-gradient-to-b from-amber-400 to-amber-600 text-emerald-950 shadow-lg hover:brightness-105 transition cursor-pointer">
+                    MAÇA BAŞLA ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- Alt İpucu Bandı -->
+        <div id="hintBanner" class="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-black/55 backdrop-blur-sm border border-white/15 text-[11px] sm:text-xs text-emerald-100 whitespace-nowrap shadow-lg">📱 Mobil: Parmağınla toptan kaleye veya takım arkadaşına doğrudan çizgi çiz!</div>
+
+        <!-- Gol / Kurtarış / Direk Bildirimi -->
+        <div id="eventOverlay" class="hidden pointer-events-none absolute inset-0 flex flex-col items-center justify-center z-20 px-4">
+            <div id="eventText" class="font-game font-extrabold text-5xl sm:text-7xl md:text-8xl text-yellow-400 drop-shadow-[0_6px_0_rgba(0,0,0,0.85)] tracking-wider text-center animate-goal">
+                GOOOL!
+            </div>
+            <div id="eventSubText" class="mt-2 px-4 py-1 rounded-full bg-black/60 text-white text-sm sm:text-base font-semibold">
+                Müthiş vuruş!
+            </div>
+        </div>
+
+        <!-- Bölüm Sonu / Oyun Bitti Modalı -->
+        <div id="modalOverlay" class="hidden absolute inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-30">
+            <div class="max-w-sm w-full bg-emerald-950/95 border border-emerald-400/30 rounded-3xl p-6 text-center shadow-2xl">
+                <div id="modalIcon" class="text-4xl mb-2">🏆</div>
+                <h2 id="modalTitle" class="font-game font-bold text-xl sm:text-2xl text-amber-300 mb-1.5">
+                    GOOOL!
+                </h2>
+                <p id="modalDesc" class="text-xs sm:text-sm text-emerald-100/85 mb-5">
+                    Bölüm tamamlandı.
+                </p>
+
+                <div class="grid grid-cols-2 gap-3 mb-5">
+                    <div class="bg-emerald-900/70 rounded-2xl p-3 border border-emerald-500/20">
+                        <div class="text-[11px] text-emerald-300/75">Bu Bölüm</div>
+                        <div id="modalLevelScore" class="font-game font-bold text-lg text-amber-300">+0</div>
+                    </div>
+                    <div class="bg-emerald-900/70 rounded-2xl p-3 border border-emerald-500/20">
+                        <div class="text-[11px] text-emerald-300/75">Toplam Skor</div>
+                        <div id="modalTotalScore" class="font-game font-bold text-lg text-emerald-200">0</div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2.5">
+                    <button id="modalBtnPrimary" type="button" class="w-full py-3 px-4 rounded-2xl font-game font-bold text-base bg-gradient-to-b from-amber-400 to-amber-600 text-emerald-950 shadow-lg hover:brightness-105 transition cursor-pointer">
+                        Sonraki Bölüm ➔
+                    </button>
+                    <button id="modalBtnSecondary" type="button" class="w-full py-2.5 px-4 rounded-2xl font-semibold text-sm bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 border border-emerald-500/25 transition cursor-pointer">
+                        Tekrar Oyna
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bölüm Seçim Modalı -->
+        <div id="levelSelectModal" class="hidden absolute inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-30">
+            <div class="max-w-lg w-full max-h-[85vh] flex flex-col bg-emerald-950/95 border border-emerald-400/30 rounded-3xl p-5 sm:p-6 shadow-2xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-game font-bold text-xl text-amber-300">Bölüm Seçimi</h2>
+                    <button id="closeLevelSelect" type="button" class="w-8 h-8 rounded-full bg-emerald-800 hover:bg-emerald-700 text-white font-bold flex items-center justify-center cursor-pointer">
+                        ✕
+                    </button>
+                </div>
+                <div id="levelGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 overflow-y-auto pr-1"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * Web Audio API ile gerçek zamanlı futbol ses efektleri sentezleyici.
+         * Dış ses dosyası kullanmadan vuruş, pas, direk, düdük ve gol atmosferi üretir.
+         */
+        class SoccerSoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            ensureContext() {
+                if (!this.enabled) return null;
+                try {
+                    if (!this.ctx) {
+                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                        if (AudioCtx) {
+                            this.ctx = new AudioCtx();
+                        }
+                    }
+                    if (this.ctx && this.ctx.state === 'suspended') {
+                        this.ctx.resume();
+                    }
+                    return this.ctx;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            toggle() {
+                this.enabled = !this.enabled;
+                if (this.enabled) {
+                    this.ensureContext();
+                    this.playKick(0.45);
+                }
+                return this.enabled;
+            }
+
+            // Topa şut veya pas vuruş sesi
+            playKick(power = 0.7, isPass = false) {
+                const ctx = this.ensureContext();
+                if (!ctx) return;
+                try {
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    const startFreq = isPass ? 165 : 135 + power * 65;
+                    osc.frequency.setValueAtTime(startFreq, now);
+                    osc.frequency.exponentialRampToValueAtTime(38, now + 0.14);
+
+                    gain.gain.setValueAtTime(Math.min(0.35, 0.14 + power * 0.18), now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.16);
+                } catch (e) {}
+            }
+
+            // Kale direğine çarpma çınlaması
+            playPostHit() {
+                const ctx = this.ensureContext();
+                if (!ctx) return;
+                try {
+                    const now = ctx.currentTime;
+                    [540, 815].forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = idx === 0 ? 'sine' : 'triangle';
+                        osc.frequency.setValueAtTime(freq, now);
+                        osc.frequency.exponentialRampToValueAtTime(freq * 0.92, now + 0.28);
+
+                        gain.gain.setValueAtTime(0.16, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.31);
+                    });
+                } catch (e) {}
+            }
+
+            // Kaleci kurtarışı / müdahale sesi
+            playSave() {
+                const ctx = this.ensureContext();
+                if (!ctx) return;
+                try {
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(190, now);
+                    osc.frequency.exponentialRampToValueAtTime(65, now + 0.18);
+
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } catch (e) {}
+            }
+
+            // Bonus hedef vurma sesi
+            playTargetHit() {
+                const ctx = this.ensureContext();
+                if (!ctx) return;
+                try {
+                    const now = ctx.currentTime;
+                    [660, 990].forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + i * 0.05);
+                        gain.gain.setValueAtTime(0.14, now + i * 0.05);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.16);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + i * 0.05);
+                        osc.stop(now + i * 0.05 + 0.17);
+                    });
+                } catch (e) {}
+            }
+
+            // Gol düdüğü ve stadyum coşkusu
+            playGoal() {
+                const ctx = this.ensureContext();
+                if (!ctx) return;
+                try {
+                    const now = ctx.currentTime;
+                    // Hakem düdüğü
+                    const whistle = ctx.createOscillator();
+                    const wGain = ctx.createGain();
+                    whistle.type = 'sine';
+                    whistle.frequency.setValueAtTime(2750, now);
+                    whistle.frequency.setValueAtTime(2920, now + 0.08);
+                    whistle.frequency.setValueAtTime(2780, now + 0.16);
+                    wGain.gain.setValueAtTime(0.09, now);
+                    wGain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+                    whistle.connect(wGain);
+                    wGain.connect(ctx.destination);
+                    whistle.start(now);
+                    whistle.stop(now + 0.44);
+
+                    // Gürültü tabanlı stadyum tezahüratı
+                    const bufferSize = Math.floor(ctx.sampleRate * 1.1);
+                    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+                    }
+                    const noise = ctx.createBufferSource();
+                    noise.buffer = buffer;
+
+                    const filter = ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(750, now);
+                    filter.Q.setValueAtTime(0.7, now);
+
+                    const nGain = ctx.createGain();
+                    nGain.gain.setValueAtTime(0.18, now);
+                    nGain.gain.exponentialRampToValueAtTime(0.005, now + 1.08);
+
+                    noise.connect(filter);
+                    filter.connect(nGain);
+                    nGain.connect(ctx.destination);
+                    noise.start(now);
+                } catch (e) {}
+            }
+        }
+
+        const sound = new SoccerSoundEngine();
+
+        /**
+         * Süper Lig ve Avrupa Kulüp Takımları Kataloğu
+         */
+        const TEAMS = [
+            // Süper Lig
+            { id: 'gs', name: 'Galatasaray', league: 'SUPER_LIG', short: 'GS', jersey: '#e11d48', trim: '#facc15', shorts: '#fef08a', keeperJersey: '#10b981' },
+            { id: 'fb', name: 'Fenerbahçe', league: 'SUPER_LIG', short: 'FB', jersey: '#facc15', trim: '#1d4ed8', shorts: '#ffffff', keeperJersey: '#38bdf8' },
+            { id: 'bjk', name: 'Beşiktaş', league: 'SUPER_LIG', short: 'BJK', jersey: '#f8fafc', trim: '#0f172a', shorts: '#0f172a', keeperJersey: '#f97316' },
+            { id: 'ts', name: 'Trabzonspor', league: 'SUPER_LIG', short: 'TS', jersey: '#9f1239', trim: '#38bdf8', shorts: '#ffffff', keeperJersey: '#eab308' },
+            { id: 'basaksehir', name: 'Başakşehir', league: 'SUPER_LIG', short: 'İBFK', jersey: '#f97316', trim: '#0f172a', shorts: '#0f172a', keeperJersey: '#22c55e' },
+            { id: 'samsun', name: 'Samsunspor', league: 'SUPER_LIG', short: 'SAM', jersey: '#dc2626', trim: '#ffffff', shorts: '#ffffff', keeperJersey: '#38bdf8' },
+
+            // Avrupa Kulüpleri
+            { id: 'rma', name: 'Real Madrid', league: 'EUROPE', short: 'RMA', jersey: '#ffffff', trim: '#7c3aed', shorts: '#ffffff', keeperJersey: '#a3e635' },
+            { id: 'bar', name: 'Barcelona', league: 'EUROPE', short: 'BAR', jersey: '#1e3a8a', trim: '#dc2626', shorts: '#1d4ed8', keeperJersey: '#facc15' },
+            { id: 'mci', name: 'Manchester City', league: 'EUROPE', short: 'MCI', jersey: '#38bdf8', trim: '#e0f2fe', shorts: '#ffffff', keeperJersey: '#fb923c' },
+            { id: 'liv', name: 'Liverpool', league: 'EUROPE', short: 'LIV', jersey: '#dc2626', trim: '#fef08a', shorts: '#dc2626', keeperJersey: '#4ade80' },
+            { id: 'bay', name: 'Bayern Münih', league: 'EUROPE', short: 'BAY', jersey: '#b91c1c', trim: '#ffffff', shorts: '#ffffff', keeperJersey: '#06b6d4' },
+            { id: 'int', name: 'Inter Milan', league: 'EUROPE', short: 'INT', jersey: '#1d4ed8', trim: '#0f172a', shorts: '#0f172a', keeperJersey: '#eab308' }
+        ];
+
+        /**
+         * Bölüm tasarımları:
+         * Kaleci sabit pozisyonda durur, şut geldiğinde refleks dalışı/uzanması yapar.
+         * Takım arkadaşları boş alanlara koşup pas opsiyonu oluşturur.
+         */
+        const LEVELS = [
+            {
+                id: 1,
+                title: 'Bölüm 1: İlk Şut',
+                shots: 4,
+                ballPos: { xRatio: 0.50, yRatio: 0.78 },
+                keeper: { xRatio: 0.50, reflexRange: 0.24, reactionSpeed: 0.085 },
+                wallCount: 0,
+                teammates: [{ xRatio: 0.24, yRatio: 0.62 }],
+                targets: [{ side: 'right', points: 150 }]
+            },
+            {
+                id: 2,
+                title: 'Bölüm 2: Ver & Vur',
+                shots: 4,
+                ballPos: { xRatio: 0.28, yRatio: 0.79 },
+                keeper: { xRatio: 0.50, reflexRange: 0.28, reactionSpeed: 0.095 },
+                wallCount: 2,
+                wallPos: { xRatio: 0.45, yRatio: 0.43 },
+                teammates: [{ xRatio: 0.74, yRatio: 0.56 }],
+                targets: [{ side: 'left', points: 200 }]
+            },
+            {
+                id: 3,
+                title: 'Bölüm 3: Falso Ustası',
+                shots: 4,
+                ballPos: { xRatio: 0.72, yRatio: 0.80 },
+                keeper: { xRatio: 0.52, reflexRange: 0.30, reactionSpeed: 0.10 },
+                wallCount: 3,
+                wallPos: { xRatio: 0.56, yRatio: 0.45 },
+                teammates: [{ xRatio: 0.25, yRatio: 0.58 }],
+                targets: [{ side: 'left', points: 250 }, { side: 'right', points: 250 }]
+            },
+            {
+                id: 4,
+                title: 'Bölüm 4: Çift Kanat',
+                shots: 4,
+                ballPos: { xRatio: 0.50, yRatio: 0.82 },
+                keeper: { xRatio: 0.50, reflexRange: 0.32, reactionSpeed: 0.105 },
+                wallCount: 3,
+                wallPos: { xRatio: 0.50, yRatio: 0.44 },
+                teammates: [
+                    { xRatio: 0.20, yRatio: 0.60 },
+                    { xRatio: 0.80, yRatio: 0.60 }
+                ],
+                targets: [{ side: 'left', points: 200 }, { side: 'right', points: 200 }]
+            },
+            {
+                id: 5,
+                title: 'Bölüm 5: Keskin Açı',
+                shots: 4,
+                ballPos: { xRatio: 0.18, yRatio: 0.74 },
+                keeper: { xRatio: 0.48, reflexRange: 0.33, reactionSpeed: 0.11 },
+                wallCount: 3,
+                wallPos: { xRatio: 0.38, yRatio: 0.42 },
+                teammates: [
+                    { xRatio: 0.55, yRatio: 0.58 },
+                    { xRatio: 0.80, yRatio: 0.52 }
+                ],
+                targets: [{ side: 'right', points: 300 }]
+            },
+            {
+                id: 6,
+                title: 'Bölüm 6: Duvar Ötesi',
+                shots: 3,
+                ballPos: { xRatio: 0.50, yRatio: 0.83 },
+                keeper: { xRatio: 0.50, reflexRange: 0.34, reactionSpeed: 0.115 },
+                wallCount: 4,
+                wallPos: { xRatio: 0.50, yRatio: 0.46 },
+                teammates: [
+                    { xRatio: 0.22, yRatio: 0.56 },
+                    { xRatio: 0.78, yRatio: 0.56 }
+                ],
+                targets: [{ side: 'left', points: 250 }, { side: 'right', points: 250 }]
+            },
+            {
+                id: 7,
+                title: 'Bölüm 7: Ters Köşe',
+                shots: 3,
+                ballPos: { xRatio: 0.82, yRatio: 0.75 },
+                keeper: { xRatio: 0.53, reflexRange: 0.35, reactionSpeed: 0.12 },
+                wallCount: 4,
+                wallPos: { xRatio: 0.62, yRatio: 0.43 },
+                teammates: [
+                    { xRatio: 0.46, yRatio: 0.57 },
+                    { xRatio: 0.20, yRatio: 0.53 }
+                ],
+                targets: [{ side: 'left', points: 350 }]
+            },
+            {
+                id: 8,
+                title: 'Bölüm 8: Final Vuruşu',
+                shots: 3,
+                ballPos: { xRatio: 0.50, yRatio: 0.84 },
+                keeper: { xRatio: 0.50, reflexRange: 0.36, reactionSpeed: 0.125 },
+                wallCount: 4,
+                wallPos: { xRatio: 0.50, yRatio: 0.45 },
+                teammates: [
+                    { xRatio: 0.18, yRatio: 0.58 },
+                    { xRatio: 0.50, yRatio: 0.64 },
+                    { xRatio: 0.82, yRatio: 0.58 }
+                ],
+                targets: [{ side: 'left', points: 300 }, { side: 'right', points: 300 }]
+            }
+        ];
+
+        /**
+         * Ana Oyun Sınıfı: Çizim yolu, falso fiziği, pas/koşu mekaniği,
+         * gerçekçi oyuncu & kaleci çizimi ve bölüm ilerlemesini yönetir.
+         */
+        class DrawSoccerGame {
+            constructor() {
+                this.canvas = document.getElementById('pitchCanvas');
+                this.ctx = this.canvas.getContext('2d');
+
+                this.width = 420;
+                this.height = 720;
+
+                this.currentLevelIndex = 0;
+                this.unlockedLevels = 1;
+                this.score = 0;
+                this.levelScore = 0;
+                this.shotsLeft = 4;
+
+                // Cihaz modu ('MOBILE' | 'PC'), oyun modu ('SOLO' | 'TOURNAMENT_2P') ve takımlar
+                this.deviceMode = 'MOBILE';
+                this.gameMode = 'SOLO';
+                this.leagueFilter = 'ALL';
+                this.team1 = TEAMS[0]; // Galatasaray
+                this.team2 = TEAMS[6]; // Real Madrid
+                this.activePlayer = 1; // 2P modunda 1 veya 2
+                this.p1Goals = 0;
+                this.p2Goals = 0;
+                this.p1Score = 0;
+                this.p2Score = 0;
+                this.tournamentRound = 1;
+                this.tournamentTargetGoals = 3;
+
+                // Oyun durumları: 'AIMING' | 'SHOOTING' | 'LEVEL_END'
+                this.state = 'AIMING';
+                this.actionType = 'SHOT'; // 'SHOT' | 'PASS'
+
+                // Çizim ve yol verileri
+                this.isDrawing = false;
+                this.rawPoints = [];
+                this.smoothPath = [];
+                this.pathIndex = 0;
+                this.curveFactor = 0;
+                this.shotPower = 0.7;
+                this.pathSpeed = 12;
+                this.pathTargetEnd = null;
+                this.goalReachedFromPath = false;
+
+                // Aktif şutçu ve pas hedefi
+                this.shooter = null;
+                this.passTargetTeammate = null;
+                this.hasPassedOnce = false;
+
+                // Sahadaki varlıklar
+                this.ball = {
+                    x: 200,
+                    y: 540,
+                    vx: 0,
+                    vy: 0,
+                    radius: 10,
+                    spin: 0,
+                    rotation: 0,
+                    trail: [],
+                    kickAnim: 0
+                };
+
+                this.goal = {
+                    x: 200,
+                    y: 96,
+                    width: 164,
+                    depth: 42,
+                    postRadius: 6,
+                    netRipple: 0,
+                    netImpactX: 200,
+                    netImpactY: 96
+                };
+
+                // Kaleci sabit noktada durur, şut sırasında refleks dalışı yapar
+                this.keeper = {
+                    x: 200,
+                    baseX: 200,
+                    y: 120,
+                    width: 46,
+                    height: 32,
+                    reflexRange: 45,
+                    reactionSpeed: 0.1,
+                    diveOffsetX: 0,
+                    diveAnim: 0,
+                    facingAngle: Math.PI / 2
+                };
+
+                this.wall = [];
+                this.teammates = [];
+                this.targets = [];
+                this.particles = [];
+                this.floatingTexts = [];
+
+                this.stateTimer = 0;
+                this.lastFrameTime = performance.now();
+                this.pendingTimers = [];
+
+                this.bindEvents();
+                this.resize();
+                this.loadLevel(0);
+            }
+
+            // Bekleyen zamanlayıcıları temizleyerek bölüm/mod geçişlerinde çakışmayı önler
+            clearPendingTimers() {
+                this.pendingTimers.forEach((timerId) => clearTimeout(timerId));
+                this.pendingTimers = [];
+            }
+
+            scheduleTimer(fn, delayMs) {
+                const timerId = setTimeout(() => {
+                    this.pendingTimers = this.pendingTimers.filter((id) => id !== timerId);
+                    fn();
+                }, delayMs);
+                this.pendingTimers.push(timerId);
+                return timerId;
+            }
+
+            // Mevcut veya sonsuz ek bölüm yapılandırmasını döndürür
+            getLevelConfig(index) {
+                if (index < LEVELS.length) {
+                    return LEVELS[index];
+                }
+                const extraNum = index + 1;
+                const sideAlternation = index % 2 === 0 ? -1 : 1;
+                return {
+                    id: extraNum,
+                    title: `Bölüm ${extraNum}: Şampiyonlar Ligi`,
+                    shots: 3,
+                    ballPos: { xRatio: 0.50 + sideAlternation * 0.16, yRatio: 0.82 },
+                    keeper: { xRatio: 0.50, reflexRange: 0.37, reactionSpeed: 0.13 },
+                    wallCount: 4,
+                    wallPos: { xRatio: 0.50, yRatio: 0.45 },
+                    teammates: [
+                        { xRatio: 0.20, yRatio: 0.58 },
+                        { xRatio: 0.80, yRatio: 0.58 }
+                    ],
+                    targets: [{ side: 'left', points: 350 }, { side: 'right', points: 350 }]
+                };
+            }
+
+            // Bölümü yükler ve arayüzü günceller
+            loadLevel(index) {
+                this.clearPendingTimers();
+                this.currentLevelIndex = Math.max(0, index);
+                const cfg = this.getLevelConfig(this.currentLevelIndex);
+
+                this.levelScore = 0;
+                this.shotsLeft = this.gameMode === 'TOURNAMENT_2P' ? 6 : cfg.shots;
+                this.hasPassedOnce = false;
+                this.passTargetTeammate = null;
+                this.particles = [];
+                this.floatingTexts = [];
+
+                if (this.gameMode === 'TOURNAMENT_2P') {
+                    document.getElementById('levelBadge').textContent = `2P Turnuva · Maç ${this.tournamentRound}`;
+                    document.getElementById('levelTitleLabel').textContent = `${this.team1.short} ${this.p1Goals} - ${this.p2Goals} ${this.team2.short} (Sıra: P${this.activePlayer})`;
+                } else {
+                    document.getElementById('levelBadge').textContent = `Bölüm ${cfg.id}`;
+                    document.getElementById('levelTitleLabel').textContent = `${this.team1.name} · ${cfg.title.replace(/^Bölüm \d+:\s*/, '')}`;
+                }
+
+                this.updateHUD();
+                this.hideModal();
+                this.hideEventOverlay();
+
+                this.setupEntities(cfg);
+                this.resetBallForShot(cfg);
+                this.state = 'AIMING';
+            }
+
+            // Aktif oyuncunun takımını döndürür
+            getActiveTeam() {
+                if (this.gameMode === 'TOURNAMENT_2P' && this.activePlayer === 2) {
+                    return this.team2;
+                }
+                return this.team1;
+            }
+
+            // Rakip / savunma takımını döndürür
+            getOpponentTeam() {
+                if (this.gameMode === 'TOURNAMENT_2P') {
+                    return this.activePlayer === 1 ? this.team2 : this.team1;
+                }
+                return TEAMS.find((t) => t.id !== this.team1.id) || TEAMS[1];
+            }
+
+            // Cihaz seçimine (Mobil / PC) göre dokunma yarıçapını ve çizim örneklemesini ayarlar
+            applyDeviceSettings(mode) {
+                this.deviceMode = mode === 'PC' ? 'PC' : 'MOBILE';
+                const badge = document.getElementById('deviceBadge');
+                if (badge) {
+                    badge.textContent = this.deviceMode === 'MOBILE' ? '📱 Mobil' : '💻 PC';
+                }
+
+                const mobileBtn = document.getElementById('selectMobileBtn');
+                const pcBtn = document.getElementById('selectPcBtn');
+                if (mobileBtn && pcBtn) {
+                    if (this.deviceMode === 'MOBILE') {
+                        mobileBtn.className = 'p-3.5 rounded-2xl border-2 border-amber-400 bg-amber-500/20 text-white flex flex-col items-center gap-1 transition cursor-pointer';
+                        pcBtn.className = 'p-3.5 rounded-2xl border-2 border-emerald-600/50 bg-emerald-900/50 text-emerald-100 hover:border-emerald-400 flex flex-col items-center gap-1 transition cursor-pointer';
+                    } else {
+                        pcBtn.className = 'p-3.5 rounded-2xl border-2 border-amber-400 bg-amber-500/20 text-white flex flex-col items-center gap-1 transition cursor-pointer';
+                        mobileBtn.className = 'p-3.5 rounded-2xl border-2 border-emerald-600/50 bg-emerald-900/50 text-emerald-100 hover:border-emerald-400 flex flex-col items-center gap-1 transition cursor-pointer';
+                    }
+                }
+
+                const hint = document.getElementById('hintBanner');
+                if (hint) {
+                    hint.textContent = this.deviceMode === 'MOBILE'
+                        ? '📱 Mobil: Parmağınla toptan kaleye veya takım arkadaşına doğrudan çizgi çiz!'
+                        : '💻 PC: Fareyi basılı tutup çizdiğin rotaya göre falsolu şut veya pas at!';
+                }
+            }
+
+            // Takım seçim kutularını lig filtresine göre doldurur
+            populateTeamSelects() {
+                const p1Select = document.getElementById('p1TeamSelect');
+                const p2Select = document.getElementById('p2TeamSelect');
+                if (!p1Select || !p2Select) return;
+
+                const filtered = TEAMS.filter((t) => {
+                    if (this.leagueFilter === 'SUPER_LIG') return t.league === 'SUPER_LIG';
+                    if (this.leagueFilter === 'EUROPE') return t.league === 'EUROPE';
+                    return true;
+                });
+
+                const list = filtered.length > 0 ? filtered : TEAMS;
+                const formatLabel = (t) => `${t.name} (${t.league === 'SUPER_LIG' ? 'Süper Lig' : 'Avrupa'})`;
+
+                p1Select.innerHTML = list
+                    .map((t) => `<option value="${t.id}" ${t.id === this.team1.id ? 'selected' : ''}>${formatLabel(t)}</option>`)
+                    .join('');
+
+                p2Select.innerHTML = list
+                    .map((t) => `<option value="${t.id}" ${t.id === this.team2.id ? 'selected' : ''}>${formatLabel(t)}</option>`)
+                    .join('');
+
+                if (!list.some((t) => t.id === this.team1.id)) {
+                    this.team1 = list[0];
+                    p1Select.value = this.team1.id;
+                }
+                if (!list.some((t) => t.id === this.team2.id)) {
+                    this.team2 = list[Math.min(1, list.length - 1)];
+                    p2Select.value = this.team2.id;
+                }
+            }
+
+            // Üst HUD göstergelerini günceller
+            updateHUD() {
+                if (this.gameMode === 'TOURNAMENT_2P') {
+                    document.getElementById('scoreDisplay').textContent = `${this.team1.short} ${this.p1Goals} - ${this.p2Goals} ${this.team2.short}`;
+                    document.getElementById('levelTitleLabel').textContent = `Sıra: Oyuncu ${this.activePlayer} (${this.getActiveTeam().name})`;
+                } else {
+                    document.getElementById('scoreDisplay').textContent = this.score;
+                }
+
+                const container = document.getElementById('shotsContainer');
+                container.innerHTML = '';
+                const totalCfgShots = this.gameMode === 'TOURNAMENT_2P'
+                    ? 6
+                    : this.getLevelConfig(this.currentLevelIndex).shots;
+                for (let i = 0; i < totalCfgShots; i++) {
+                    const dot = document.createElement('span');
+                    const active = i < this.shotsLeft;
+                    dot.className = `inline-block w-3 h-3 rounded-full border ${
+                        active
+                            ? 'bg-amber-400 border-amber-200 shadow-sm'
+                            : 'bg-emerald-950/80 border-emerald-600/40'
+                    }`;
+                    container.appendChild(dot);
+                }
+            }
+
+            // Fare veya dokunmatik koordinatını tuval uzayına çevirir
+            getPointerPos(evt) {
+                const rect = this.canvas.getBoundingClientRect();
+                let clientX = 0;
+                let clientY = 0;
+
+                if (evt.touches && evt.touches.length > 0) {
+                    clientX = evt.touches[0].clientX;
+                    clientY = evt.touches[0].clientY;
+                } else if (evt.changedTouches && evt.changedTouches.length > 0) {
+                    clientX = evt.changedTouches[0].clientX;
+                    clientY = evt.changedTouches[0].clientY;
+                } else {
+                    clientX = evt.clientX;
+                    clientY = evt.clientY;
+                }
+
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+
+            // Çizim başlangıcı (topa veya yakın çevresine basıldığında)
+            onPointerDown(evt) {
+                if (this.state !== 'AIMING') return;
+                sound.ensureContext();
+
+                const pos = this.getPointerPos(evt);
+                if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
+                const distToBall = Math.hypot(pos.x - this.ball.x, pos.y - this.ball.y);
+                // Topun etrafında makul bir yakalama alanı (mobil için biraz daha geniş)
+                const grabRadius = this.deviceMode === 'MOBILE' ? 72 : 58;
+                if (distToBall <= grabRadius) {
+                    this.isDrawing = true;
+                    this.rawPoints = [{ x: this.ball.x, y: this.ball.y }];
+                    if (pos.x !== this.ball.x || pos.y !== this.ball.y) {
+                        this.rawPoints.push(pos);
+                    }
+                    this.smoothPath = this.chaikinSmooth(this.rawPoints, 3);
+                    this.evaluateDrawIntent();
+                }
+            }
+
+            // Çizim sırasında yol noktalarını ekler ve pas/şut/falso analizini yapar
+            onPointerMove(evt) {
+                if (!this.isDrawing || this.state !== 'AIMING') return;
+                const pos = this.getPointerPos(evt);
+                if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
+                const last = this.rawPoints[this.rawPoints.length - 1];
+                if (!last) return;
+
+                const dist = Math.hypot(pos.x - last.x, pos.y - last.y);
+                const minStep = this.deviceMode === 'MOBILE' ? 5 : 7;
+                if (dist >= minStep) {
+                    this.rawPoints.push(pos);
+                    this.smoothPath = this.chaikinSmooth(this.rawPoints, 3);
+                    this.evaluateDrawIntent();
+                }
+            }
+
+            // Çizim bittiğinde şut veya pas vuruşunu tetikler
+            onPointerUp() {
+                if (!this.isDrawing) return;
+                this.isDrawing = false;
+
+                if (this.state !== 'AIMING') {
+                    this.rawPoints = [];
+                    this.smoothPath = [];
+                    return;
+                }
+
+                this.evaluateDrawIntent();
+
+                const pathLen = this.getPathLength(this.smoothPath);
+                if (pathLen < 24 || this.smoothPath.length < 2) {
+                    // Çok kısa çizimler iptal edilir, hak düşmez
+                    this.rawPoints = [];
+                    this.smoothPath = [];
+                    this.passTargetTeammate = null;
+                    this.actionType = 'SHOT';
+                    return;
+                }
+
+                this.launchBallAlongPath();
+            }
+
+            // Çizilen yolun takım arkadaşına pas mı yoksa kaleye şut/falso mu olduğunu belirler
+            evaluateDrawIntent() {
+                this.passTargetTeammate = null;
+                this.actionType = 'SHOT';
+
+                if (this.rawPoints.length < 2) return;
+                const endPt = this.rawPoints[this.rawPoints.length - 1];
+
+                let closestTm = null;
+                let minDist = 54;
+                for (const tm of this.teammates) {
+                    const d = Math.hypot(endPt.x - tm.x, endPt.y - tm.y);
+                    if (d < minDist) {
+                        minDist = d;
+                        closestTm = tm;
+                    }
+                }
+
+                if (closestTm) {
+                    this.actionType = 'PASS';
+                    this.passTargetTeammate = closestTm;
+                    this.curveFactor = 0;
+                    this.shotPower = Math.min(0.85, Math.max(0.45, this.getPathLength(this.smoothPath) / 220));
+                    return;
+                }
+
+                // Şut ve falso hesabı
+                const startPt = this.rawPoints[0];
+                const dx = endPt.x - startPt.x;
+                const dy = endPt.y - startPt.y;
+                const chordLen = Math.max(1, Math.hypot(dx, dy));
+
+                let maxSignedOffset = 0;
+                for (let i = 1; i < this.rawPoints.length - 1; i++) {
+                    const p = this.rawPoints[i];
+                    const cross = (dx * (p.y - startPt.y) - dy * (p.x - startPt.x)) / chordLen;
+                    if (Math.abs(cross) > Math.abs(maxSignedOffset)) {
+                        maxSignedOffset = cross;
+                    }
+                }
+
+                this.curveFactor = Math.max(-1.6, Math.min(1.6, maxSignedOffset / 65));
+                const totalLen = this.getPathLength(this.smoothPath);
+                this.shotPower = Math.max(0.45, Math.min(1.25, totalLen / 240));
+            }
+
+            // Chaikin köşe yumuşatma algoritması ile çizgiyi pürüzsüz eğriye dönüştürür
+            chaikinSmooth(points, iterations = 2) {
+                if (!points || points.length < 3) return points ? [...points] : [];
+                let pts = [...points];
+                for (let iter = 0; iter < iterations; iter++) {
+                    const next = [pts[0]];
+                    for (let i = 0; i < pts.length - 1; i++) {
+                        const p0 = pts[i];
+                        const p1 = pts[i + 1];
+                        const q = {
+                            x: 0.75 * p0.x + 0.25 * p1.x,
+                            y: 0.75 * p0.y + 0.25 * p1.y
+                        };
+                        const r = {
+                            x: 0.25 * p0.x + 0.75 * p1.x,
+                            y: 0.25 * p0.y + 0.75 * p1.y
+                        };
+                        next.push(q, r);
+                    }
+                    next.push(pts[pts.length - 1]);
+                    pts = next;
+                }
+                return pts;
+            }
+
+            getPathLength(pts) {
+                if (!pts || pts.length < 2) return 0;
+                let total = 0;
+                for (let i = 1; i < pts.length; i++) {
+                    total += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+                }
+                return total;
+            }
+
+            // Çizilen yolu takip ederek şut veya pas vuruşunu başlatır
+            launchBallAlongPath() {
+                this.state = 'SHOOTING';
+                this.shotsLeft = Math.max(0, this.shotsLeft - 1);
+                this.updateHUD();
+
+                // Çizilen yolun ilk noktasını top merkezine hizalayarak çizdiğin rotayı birebir takip etmesini sağla
+                this.smoothPath[0] = { x: this.ball.x, y: this.ball.y };
+                const firstWp = this.smoothPath[Math.min(1, this.smoothPath.length - 1)];
+                const endPt = this.smoothPath[this.smoothPath.length - 1];
+                this.pathTargetEnd = { x: endPt.x, y: endPt.y };
+                this.goalReachedFromPath = this.isPointInsideGoalMouth(endPt.x, endPt.y);
+
+                // Çizdiğin çizgi doğrudan kale ağzına veya çok yakınına uzanıyorsa otomatik kaleye yönlendir
+                const goalLeft = this.goal.x - this.goal.width * 0.55;
+                const goalRight = this.goal.x + this.goal.width * 0.55;
+                if (this.actionType === 'SHOT' && endPt.x >= goalLeft && endPt.x <= goalRight && endPt.y <= this.goal.y + 34) {
+                    const clampedGoalX = Math.max(
+                        this.goal.x - this.goal.width * 0.42,
+                        Math.min(this.goal.x + this.goal.width * 0.42, endPt.x)
+                    );
+                    const targetGoalY = this.goal.y - Math.max(12, this.goal.depth * 0.45);
+                    this.smoothPath[this.smoothPath.length - 1] = { x: clampedGoalX, y: targetGoalY };
+                    this.smoothPath = this.chaikinSmooth(this.smoothPath, 2);
+                    this.smoothPath[0] = { x: this.ball.x, y: this.ball.y };
+                    this.goalReachedFromPath = true;
+                }
+
+                const nextWp = this.smoothPath[Math.min(1, this.smoothPath.length - 1)];
+                const angle = Math.atan2(nextWp.y - this.ball.y, nextWp.x - this.ball.x);
+                const isPass = this.actionType === 'PASS';
+
+                this.pathIndex = 1;
+                this.pathSpeed = isPass ? 11.5 : Math.max(10, Math.min(20, 11 + this.shotPower * 7.5));
+                this.ball.spin = this.curveFactor;
+                this.ball.kickAnim = 1;
+                this.ball.trail = [{ x: this.ball.x, y: this.ball.y }];
+                this.ball.vx = Math.cos(angle) * this.pathSpeed;
+                this.ball.vy = Math.sin(angle) * this.pathSpeed;
+
+                if (this.shooter) {
+                    this.shooter.facingAngle = angle;
+                    this.shooter.kickAnim = 1;
+                }
+
+                sound.playKick(this.shotPower, isPass);
+                this.spawnBurst(this.ball.x, this.ball.y, '#fef08a', 8);
+            }
+
+            // Verilen noktanın kale ağzı sınırları içinde olup olmadığını kontrol eder
+            isPointInsideGoalMouth(x, y) {
+                const leftPostX = this.goal.x - this.goal.width / 2 + this.ball.radius * 0.4;
+                const rightPostX = this.goal.x + this.goal.width / 2 - this.ball.radius * 0.4;
+                const inX = x >= leftPostX && x <= rightPostX;
+                const inY = y <= this.goal.y + 18 && y >= this.goal.y - this.goal.depth - 24;
+                return inX && inY;
+            }
+
+            // Ana güncelleme döngüsü
+            update() {
+                const now = performance.now();
+                const dt = Math.min(0.05, (now - this.lastFrameTime) / 1000);
+                this.lastFrameTime = now;
+
+                this.updatePlayersMovement(dt);
+                this.updateParticles(dt);
+                this.updateFloatingTexts(dt);
+
+                if (this.goal.netRipple > 0) {
+                    this.goal.netRipple = Math.max(0, this.goal.netRipple - dt * 3.2);
+                }
+
+                if (this.state === 'SHOOTING') {
+                    this.updateBallMovement();
+                } else if (this.state === 'LEVEL_END') {
+                    this.stateTimer -= dt;
+                }
+            }
+
+            // Aktif şutçu ve takım arkadaşlarının koşu / pozisyon alma hareketi
+            updatePlayersMovement(dt) {
+                const w = this.width;
+                const h = this.height;
+                const minY = Math.max(this.goal.y + 42, h * 0.25);
+                const maxY = Math.min(h - 32, h * 0.90);
+
+                // 1. Takım arkadaşları boş alanlara koşup açı alır ve pas geldiğinde topa yönelir
+                this.teammates.forEach((tm, idx) => {
+                    const sideSign = idx % 2 === 0 ? -1 : 1;
+                    const waveX = Math.sin(performance.now() * 0.0021 + idx * 1.9);
+                    const waveY = Math.cos(performance.now() * 0.0017 + idx * 1.3);
+
+                    let targetX = w * 0.5 + sideSign * (this.goal.width * 0.95 + waveX * w * 0.14);
+                    let targetY = h * 0.55 + waveY * h * 0.09;
+
+                    // Eğer bu takım arkadaşına pas atıldıysa topa doğru koşarak karşılar
+                    const isReceivingPass =
+                        this.state === 'SHOOTING' &&
+                        this.actionType === 'PASS' &&
+                        this.passTargetTeammate &&
+                        this.passTargetTeammate.id === tm.id;
+
+                    if (isReceivingPass) {
+                        targetX = this.ball.x;
+                        targetY = this.ball.y;
+                    }
+
+                    targetX = Math.max(w * 0.12, Math.min(w * 0.88, targetX));
+                    targetY = Math.max(minY, Math.min(maxY, targetY));
+
+                    const dx = targetX - tm.x;
+                    const dy = targetY - tm.y;
+                    const dist = Math.hypot(dx, dy);
+
+                    if (dist > 2) {
+                        const speed = isReceivingPass ? 215 * dt : 78 * dt;
+                        const step = Math.min(dist, speed);
+                        tm.x += (dx / dist) * step;
+                        tm.y += (dy / dist) * step;
+                        tm.stridePhase += dt * (isReceivingPass ? 16 : 8);
+                        tm.facingAngle = Math.atan2(dy, dx);
+                    } else if (this.state === 'AIMING') {
+                        tm.facingAngle = Math.atan2(this.ball.y - tm.y, this.ball.x - tm.x);
+                    }
+
+                    // Nişan çizgisi bu takım arkadaşına bağlıysa çizgi ucunu koşan oyuncuya güncelle
+                    if (this.isDrawing && this.actionType === 'PASS' && this.passTargetTeammate && this.passTargetTeammate.id === tm.id && this.rawPoints.length > 0) {
+                        this.rawPoints[this.rawPoints.length - 1] = { x: tm.x, y: tm.y };
+                        this.smoothPath = this.chaikinSmooth(this.rawPoints, 3);
+                    }
+
+                    if (tm.kickAnim > 0) {
+                        tm.kickAnim = Math.max(0, tm.kickAnim - dt * 4.5);
+                    }
+                });
+
+                // 2. Aktif oyuncu sabit pozisyonda kalır; yalnızca vuruş yönüne ve şut animasyonuna tepki verir
+                if (this.shooter) {
+                    if (this.shooter.kickAnim > 0) {
+                        this.shooter.kickAnim = Math.max(0, this.shooter.kickAnim - dt * 4.5);
+                    }
+                    if (this.state === 'AIMING' && this.isDrawing && this.smoothPath.length > 1) {
+                        const aimTarget = this.smoothPath[Math.min(this.smoothPath.length - 1, 5)];
+                        this.shooter.facingAngle = Math.atan2(aimTarget.y - this.shooter.y, aimTarget.x - this.shooter.x);
+                    }
+                }
+            }
+
+            // Top hareketi, falso, pas kontrolü, kaleci refleksi, direk ve gol kontrolü
+            updateBallMovement() {
+                this.ball.trail.push({ x: this.ball.x, y: this.ball.y });
+                if (this.ball.trail.length > 14) {
+                    this.ball.trail.shift();
+                }
+
+                // Çizilen yolu adım adım ve doğrudan takip et (rastgele sapma veya dış kuvvet eklemeden)
+                if (this.smoothPath.length > 1 && this.pathIndex < this.smoothPath.length) {
+                    let remainingStep = this.pathSpeed;
+
+                    while (remainingStep > 0 && this.pathIndex < this.smoothPath.length) {
+                        const wp = this.smoothPath[this.pathIndex];
+                        const dx = wp.x - this.ball.x;
+                        const dy = wp.y - this.ball.y;
+                        const dist = Math.hypot(dx, dy);
+
+                        if (dist <= remainingStep) {
+                            this.ball.x = wp.x;
+                            this.ball.y = wp.y;
+                            this.ball.vx = dist > 0.001 ? (dx / dist) * this.pathSpeed : this.ball.vx;
+                            this.ball.vy = dist > 0.001 ? (dy / dist) * this.pathSpeed : this.ball.vy;
+                            remainingStep -= dist;
+                            this.pathIndex++;
+                        } else {
+                            this.ball.vx = (dx / dist) * this.pathSpeed;
+                            this.ball.vy = (dy / dist) * this.pathSpeed;
+                            this.ball.x += (dx / dist) * remainingStep;
+                            this.ball.y += (dy / dist) * remainingStep;
+                            remainingStep = 0;
+                        }
+                    }
+                } else {
+                    // Çizginin sonuna ulaşıldığında hızı çizilen bitiş noktasına göre kademeli yavaşlat
+                    this.ball.x += this.ball.vx;
+                    this.ball.y += this.ball.vy;
+                    this.ball.vx *= 0.86;
+                    this.ball.vy *= 0.86;
+                }
+
+                this.ball.rotation += (Math.hypot(this.ball.vx, this.ball.vy) * 0.08) * (this.ball.spin >= 0 ? 1 : -1);
+                if (this.ball.kickAnim > 0) {
+                    this.ball.kickAnim = Math.max(0, this.ball.kickAnim - 0.08);
+                }
+
+                // 1. Pas yakalama kontrolü: koşan takım arkadaşı topu kontrol eder
+                if (this.actionType === 'PASS') {
+                    for (const tm of this.teammates) {
+                        const dist = Math.hypot(this.ball.x - tm.x, this.ball.y - tm.y);
+                        if (dist <= this.ball.radius + tm.radius + 8) {
+                            this.completePassToTeammate(tm);
+                            return;
+                        }
+                    }
+                }
+
+                // 2. Bonus hedeflerle çarpışma
+                for (const target of this.targets) {
+                    if (!target.hit) {
+                        const d = Math.hypot(this.ball.x - target.x, this.ball.y - target.y);
+                        if (d <= this.ball.radius + target.radius + 4) {
+                            target.hit = true;
+                            this.addPlayerPoints(target.points);
+                            this.updateHUD();
+                            sound.playTargetHit();
+                            this.spawnBurst(target.x, target.y, '#38bdf8', 16);
+                            this.addFloatingText(target.x, target.y - 10, `+${target.points} HEDEF!`, '#7dd3fc');
+                        }
+                    }
+                }
+
+                // 3. Baraj oyuncularıyla çarpışma
+                for (const defender of this.wall) {
+                    const dx = this.ball.x - defender.x;
+                    const dy = this.ball.y - defender.y;
+                    const dist = Math.hypot(dx, dy);
+                    const minDist = this.ball.radius + defender.radius;
+                    if (dist < minDist && dist > 0.001) {
+                        const nx = dx / dist;
+                        const ny = dy / dist;
+                        this.ball.x = defender.x + nx * (minDist + 1);
+                        this.ball.y = defender.y + ny * (minDist + 1);
+                        const dot = this.ball.vx * nx + this.ball.vy * ny;
+                        this.ball.vx = (this.ball.vx - 2 * dot * nx) * 0.62;
+                        this.ball.vy = (this.ball.vy - 2 * dot * ny) * 0.62;
+                        this.ball.spin *= 0.5;
+                        defender.jumpAnim = 1;
+                        sound.playSave();
+                        this.spawnBurst(this.ball.x, this.ball.y, '#f87171', 10);
+                        this.addFloatingText(defender.x, defender.y - 18, 'BARAJ!', '#fca5a5');
+                    }
+                }
+
+                // 4. Kale direkleriyle çarpışma
+                const leftPostX = this.goal.x - this.goal.width / 2;
+                const rightPostX = this.goal.x + this.goal.width / 2;
+                const postY = this.goal.y;
+
+                const posts = [
+                    { x: leftPostX, y: postY },
+                    { x: rightPostX, y: postY }
+                ];
+
+                for (const post of posts) {
+                    const dx = this.ball.x - post.x;
+                    const dy = this.ball.y - post.y;
+                    const dist = Math.hypot(dx, dy);
+                    const minDist = this.ball.radius + this.goal.postRadius;
+                    if (dist < minDist && dist > 0.001) {
+                        const nx = dx / dist;
+                        const ny = dy / dist;
+                        this.ball.x = post.x + nx * (minDist + 1);
+                        this.ball.y = post.y + ny * (minDist + 1);
+                        const dot = this.ball.vx * nx + this.ball.vy * ny;
+                        this.ball.vx = (this.ball.vx - 2 * dot * nx) * 0.76;
+                        this.ball.vy = (this.ball.vy - 2 * dot * ny) * 0.76;
+                        sound.playPostHit();
+                        this.spawnBurst(post.x, post.y, '#fde047', 14);
+                        this.addFloatingText(post.x, post.y - 16, 'DİREK!', '#fde047');
+                    }
+                }
+
+                // 5. Kaleci refleks ve kurtarış kontrolü (kaleci kendi noktasından uzanır)
+                if (this.ball.vy < 0 && this.ball.y < this.keeper.y + 42 && this.ball.y > this.goal.y - 10) {
+                    const clampedBallX = Math.max(
+                        this.keeper.baseX - this.keeper.reflexRange,
+                        Math.min(this.keeper.baseX + this.keeper.reflexRange, this.ball.x)
+                    );
+                    this.keeper.x += (clampedBallX - this.keeper.x) * this.keeper.reactionSpeed;
+                    this.keeper.diveOffsetX = this.keeper.x - this.keeper.baseX;
+                    this.keeper.diveAnim = Math.min(1, Math.abs(this.keeper.diveOffsetX) / Math.max(1, this.keeper.reflexRange));
+                    this.keeper.facingAngle = Math.atan2(this.ball.y - this.keeper.y, this.ball.x - this.keeper.x);
+
+                    const kdx = Math.abs(this.ball.x - this.keeper.x);
+                    const kdy = Math.abs(this.ball.y - this.keeper.y);
+                    if (kdx < this.keeper.width * 0.52 + this.ball.radius && kdy < this.keeper.height * 0.48 + this.ball.radius) {
+                        this.ball.vy = Math.abs(this.ball.vy) * 0.55 + 2.2;
+                        this.ball.vx = (this.ball.x - this.keeper.x) * 0.25 + (Math.random() - 0.5) * 2.5;
+                        this.ball.spin *= 0.4;
+                        this.pathIndex = this.smoothPath.length;
+                        sound.playSave();
+                        this.spawnBurst(this.ball.x, this.ball.y, '#fb923c', 12);
+                        this.addFloatingText(this.keeper.x, this.keeper.y - 18, 'KURTARIŞ!', '#fdba74');
+                    }
+                }
+
+                // 6. Gol kontrolü: top kale direkleri arasından çizgiyi geçtiğinde veya kale içine çizildiğinde
+                const withinGoalX = this.ball.x > leftPostX + this.ball.radius * 0.45 && this.ball.x < rightPostX - this.ball.radius * 0.45;
+                const crossedGoalLine = this.ball.y <= this.goal.y + 6 && this.ball.y >= this.goal.y - this.goal.depth - 20;
+                const finishedInsideGoal =
+                    this.pathIndex >= this.smoothPath.length &&
+                    this.goalReachedFromPath &&
+                    this.isPointInsideGoalMouth(this.ball.x, this.ball.y);
+
+                if ((withinGoalX && crossedGoalLine) || finishedInsideGoal) {
+                    this.handleGoalScored();
+                    return;
+                }
+
+                // 7. Vuruş sonu / saha dışı kontrolü
+                const speedNow = Math.hypot(this.ball.vx, this.ball.vy);
+                const outOfBounds =
+                    this.ball.x < -30 ||
+                    this.ball.x > this.width + 30 ||
+                    this.ball.y < -30 ||
+                    this.ball.y > this.height + 30;
+                const pathFinishedAndStopped = this.pathIndex >= this.smoothPath.length && speedNow < 0.45;
+
+                if (outOfBounds || pathFinishedAndStopped) {
+                    this.handleMissedShot();
+                }
+            }
+
+            // Bölümdeki kaleci, baraj, takım arkadaşları ve bonus hedefleri kurar
+            setupEntities(cfg) {
+                const w = this.width;
+                const h = this.height;
+
+                this.goal.width = Math.max(120, Math.min(200, w * 0.42));
+                this.goal.depth = Math.max(34, Math.min(54, h * 0.065));
+                this.goal.x = w * 0.5;
+                this.goal.y = Math.max(76, Math.min(118, h * 0.145));
+
+                const kCfg = cfg.keeper || { xRatio: 0.5, reflexRange: 0.3, reactionSpeed: 0.1 };
+                this.keeper.baseX = w * (kCfg.xRatio || 0.5);
+                this.keeper.x = this.keeper.baseX;
+                this.keeper.y = this.goal.y + 18;
+                this.keeper.reflexRange = Math.max(24, w * (kCfg.reflexRange || 0.3));
+                this.keeper.reactionSpeed = kCfg.reactionSpeed || 0.1;
+                this.keeper.diveOffsetX = 0;
+                this.keeper.diveAnim = 0;
+
+                // Baraj oyuncuları
+                this.wall = [];
+                const wallCount = cfg.wallCount || 0;
+                if (wallCount > 0) {
+                    const wallBaseX = w * ((cfg.wallPos && cfg.wallPos.xRatio) || 0.5);
+                    const wallBaseY = h * ((cfg.wallPos && cfg.wallPos.yRatio) || 0.44);
+                    const spacing = 26;
+                    const startX = wallBaseX - ((wallCount - 1) * spacing) / 2;
+                    for (let i = 0; i < wallCount; i++) {
+                        this.wall.push({
+                            x: startX + i * spacing,
+                            y: wallBaseY,
+                            radius: 13,
+                            jumpAnim: 0,
+                            facingAngle: Math.PI / 2
+                        });
+                    }
+                }
+
+                // Takım arkadaşları
+                this.teammates = [];
+                (cfg.teammates || []).forEach((tmCfg, idx) => {
+                    this.teammates.push({
+                        id: idx + 1,
+                        x: w * tmCfg.xRatio,
+                        y: h * tmCfg.yRatio,
+                        radius: 13,
+                        stridePhase: idx * 1.4,
+                        kickAnim: 0,
+                        facingAngle: -Math.PI / 2
+                    });
+                });
+
+                // Bonus hedefler
+                this.targets = [];
+                (cfg.targets || []).forEach((tCfg, idx) => {
+                    const isLeft = tCfg.side === 'left';
+                    this.targets.push({
+                        x: isLeft
+                            ? this.goal.x - this.goal.width * 0.34
+                            : this.goal.x + this.goal.width * 0.34,
+                        y: this.goal.y - this.goal.depth * 0.48,
+                        radius: 13,
+                        points: tCfg.points || 200,
+                        hit: false,
+                        pulse: idx * 1.7
+                    });
+                });
+            }
+
+            // Topu ve aktif şutçuyu sıradaki vuruşa hazırlar
+            resetBallForShot(cfg = this.getLevelConfig(this.currentLevelIndex)) {
+                const bPos = cfg.ballPos || { xRatio: 0.5, yRatio: 0.8 };
+                this.ball.x = Math.max(40, Math.min(this.width - 40, this.width * bPos.xRatio));
+                this.ball.y = Math.max(this.goal.y + 95, Math.min(this.height - 45, this.height * bPos.yRatio));
+                this.ball.vx = 0;
+                this.ball.vy = 0;
+                this.ball.spin = 0;
+                this.ball.rotation = 0;
+                this.ball.trail = [];
+                this.ball.kickAnim = 0;
+
+                this.rawPoints = [];
+                this.smoothPath = [];
+                this.pathIndex = 0;
+                this.isDrawing = false;
+                this.passTargetTeammate = null;
+                this.goalReachedFromPath = false;
+
+                this.keeper.x = this.keeper.baseX;
+                this.keeper.diveOffsetX = 0;
+                this.keeper.diveAnim = 0;
+
+                this.shooter = {
+                    x: this.ball.x,
+                    y: Math.min(this.height - 20, this.ball.y + 18),
+                    radius: 13,
+                    stridePhase: 0,
+                    kickAnim: 0,
+                    facingAngle: Math.atan2(this.goal.y - this.ball.y, this.goal.x - this.ball.x)
+                };
+            }
+
+            // Pas hedefindeki takım arkadaşına topu aktarır ve şut/pas zincirini sürdürür
+            completePassToTeammate(tm) {
+                this.hasPassedOnce = true;
+                this.passTargetTeammate = null;
+                this.actionType = 'SHOT';
+                this.rawPoints = [];
+                this.smoothPath = [];
+                this.pathIndex = 0;
+                this.isDrawing = false;
+                this.goalReachedFromPath = false;
+
+                this.ball.x = tm.x;
+                this.ball.y = tm.y;
+                this.ball.vx = 0;
+                this.ball.vy = 0;
+                this.ball.spin = 0;
+                this.ball.trail = [];
+
+                tm.kickAnim = 0.65;
+                this.shooter = {
+                    x: tm.x,
+                    y: tm.y + 14,
+                    radius: 13,
+                    stridePhase: tm.stridePhase,
+                    kickAnim: 0.4,
+                    facingAngle: Math.atan2(this.goal.y - tm.y, this.goal.x - tm.x)
+                };
+
+                this.shotsLeft = Math.min(
+                    this.gameMode === 'TOURNAMENT_2P' ? 6 : this.getLevelConfig(this.currentLevelIndex).shots,
+                    this.shotsLeft + 1
+                );
+                this.updateHUD();
+                this.spawnBurst(tm.x, tm.y, '#4ade80', 10);
+                this.addFloatingText(tm.x, tm.y - 18, 'PAS ALINDI! ŞUT ÇEK', '#86efac');
+                this.state = 'AIMING';
+            }
+
+            hideModal() {
+                const modal = document.getElementById('modalOverlay');
+                if (modal) modal.classList.add('hidden');
+            }
+
+            // Aktif oyuncuya puan ekler
+            addPlayerPoints(pts) {
+                this.score += pts;
+                this.levelScore += pts;
+                if (this.gameMode === 'TOURNAMENT_2P') {
+                    if (this.activePlayer === 1) this.p1Score += pts;
+                    else this.p2Score += pts;
+                }
+            }
+
+            // Gol atıldığında puan, efektler ve bölüm/turnuva tamamlama modalını yönetir
+            handleGoalScored() {
+                this.state = 'LEVEL_END';
+                this.ball.vx *= 0.25;
+                this.ball.vy = Math.max(-2.5, this.ball.vy * 0.25);
+                this.goal.netRipple = 1;
+                this.goal.netImpactX = this.ball.x;
+                this.goal.netImpactY = this.ball.y;
+
+                const passBonus = this.hasPassedOnce ? 250 : 0;
+                const curveBonus = Math.abs(this.curveFactor) > 0.35 ? 150 : 0;
+                const baseGoalPoints = 500 + passBonus + curveBonus;
+
+                this.addPlayerPoints(baseGoalPoints);
+                this.updateHUD();
+
+                if (this.currentLevelIndex + 2 > this.unlockedLevels) {
+                    this.unlockedLevels = this.currentLevelIndex + 2;
+                }
+
+                sound.playGoal();
+                this.spawnBurst(this.ball.x, this.ball.y, '#fde047', 28);
+                this.spawnBurst(this.ball.x, this.ball.y, '#4ade80', 18);
+
+                if (this.gameMode === 'TOURNAMENT_2P') {
+                    if (this.activePlayer === 1) this.p1Goals += 1;
+                    else this.p2Goals += 1;
+
+                    const scorerTeam = this.getActiveTeam();
+                    const pLabel = `Oyuncu ${this.activePlayer} (${scorerTeam.name})`;
+
+                    if (this.p1Goals >= this.tournamentTargetGoals || this.p2Goals >= this.tournamentTargetGoals) {
+                        this.showEventOverlay('TURNUVA ŞAMPİYONU!', `${pLabel} maçı kazandı!`, 'text-amber-300');
+                        this.scheduleTimer(() => {
+                            this.hideEventOverlay();
+                            this.showTournamentWinnerModal();
+                        }, 1450);
+                        return;
+                    }
+
+                    const nextPlayer = this.activePlayer === 1 ? 2 : 1;
+                    this.showEventOverlay('GOOOL!', `${pLabel} gol attı! Sıra Oyuncu ${nextPlayer}'de`, 'text-yellow-400');
+                    this.scheduleTimer(() => {
+                        this.hideEventOverlay();
+                        this.activePlayer = nextPlayer;
+                        this.hasPassedOnce = false;
+                        this.resetBallForShot();
+                        this.updateHUD();
+                        this.state = 'AIMING';
+                    }, 1300);
+                    return;
+                }
+
+                let subMsg = `+${baseGoalPoints} Puan!`;
+                if (passBonus > 0 && curveBonus > 0) {
+                    subMsg = `Ver-Kaç & Falso Bonusu! +${baseGoalPoints} Puan`;
+                } else if (passBonus > 0) {
+                    subMsg = `Harika Takım Pası! +${baseGoalPoints} Puan`;
+                } else if (curveBonus > 0) {
+                    subMsg = `Müthiş Falso! +${baseGoalPoints} Puan`;
+                }
+
+                this.showEventOverlay('GOOOL!', subMsg, 'text-yellow-400');
+
+                this.scheduleTimer(() => {
+                    this.hideEventOverlay();
+                    this.showLevelCompleteModal();
+                }, 1350);
+            }
+
+            // Şut kaçtığında kalan hakka göre sonraki vuruşa, 2P sıra değişimine veya oyun sonuna geçer
+            handleMissedShot() {
+                if (this.gameMode === 'TOURNAMENT_2P') {
+                    const nextPlayer = this.activePlayer === 1 ? 2 : 1;
+                    if (this.shotsLeft > 0) {
+                        this.showEventOverlay('KAÇTI!', `Sıra Oyuncu ${nextPlayer}'de!`, 'text-rose-400');
+                        this.scheduleTimer(() => {
+                            this.hideEventOverlay();
+                            this.activePlayer = nextPlayer;
+                            this.hasPassedOnce = false;
+                            this.resetBallForShot();
+                            this.updateHUD();
+                            this.state = 'AIMING';
+                        }, 850);
+                    } else {
+                        this.showEventOverlay('MAÇ SONU!', 'Turnuva sonucu belirleniyor...', 'text-amber-300');
+                        this.scheduleTimer(() => {
+                            this.hideEventOverlay();
+                            this.showTournamentWinnerModal();
+                        }, 1050);
+                    }
+                    return;
+                }
+
+                if (this.shotsLeft > 0) {
+                    this.hasPassedOnce = false;
+                    this.resetBallForShot();
+                    this.state = 'AIMING';
+                } else {
+                    this.showEventOverlay('KAÇTI!', 'Şut hakların tükendi.', 'text-rose-400');
+                    this.scheduleTimer(() => {
+                        this.hideEventOverlay();
+                        this.showGameOverModal();
+                    }, 1050);
+                }
+            }
+
+            // Parçacık ve kayan yazı yardımcıları
+            spawnBurst(x, y, color, count = 12) {
+                for (let i = 0; i < count; i++) {
+                    const ang = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
+                    const spd = 1.8 + Math.random() * 4.2;
+                    this.particles.push({
+                        x,
+                        y,
+                        vx: Math.cos(ang) * spd,
+                        vy: Math.sin(ang) * spd,
+                        life: 1,
+                        color,
+                        size: 2.5 + Math.random() * 3
+                    });
+                }
+            }
+
+            updateParticles(dt) {
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vx *= 0.94;
+                    p.vy *= 0.94;
+                    p.life -= dt * 2.2;
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+            }
+
+            addFloatingText(x, y, text, color = '#ffffff') {
+                this.floatingTexts.push({ x, y, text, color, life: 1 });
+            }
+
+            updateFloatingTexts(dt) {
+                for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
+                    const ft = this.floatingTexts[i];
+                    ft.y -= dt * 28;
+                    ft.life -= dt * 1.15;
+                    if (ft.life <= 0) {
+                        this.floatingTexts.splice(i, 1);
+                    }
+                }
+            }
+
+            /**
+             * SAHA, KALE, HEDEF, OYUNCU, KALECİ VE TOP ÇİZİMİ
+             */
+            draw() {
+                const ctx = this.ctx;
+                ctx.clearRect(0, 0, this.width, this.height);
+
+                this.drawPitch(ctx);
+                this.drawGoalBackNet(ctx);
+                this.drawTargets(ctx);
+                this.drawGoalkeeper(ctx);
+                this.drawWallPlayers(ctx);
+                this.drawTeammates(ctx);
+                this.drawShooterPlayer(ctx);
+                this.drawAimPath(ctx);
+                this.drawBall(ctx);
+                this.drawGoalFrontPosts(ctx);
+                this.drawParticles(ctx);
+                this.drawFloatingTexts(ctx);
+            }
+
+            // Çizgili yeşil futbol sahası, ceza sahası ve stadyum aydınlatması
+            drawPitch(ctx) {
+                const w = this.width;
+                const h = this.height;
+
+                const stripeCount = 10;
+                const stripeH = Math.max(10, h / stripeCount);
+
+                for (let i = 0; i < stripeCount; i++) {
+                    ctx.fillStyle = i % 2 === 0 ? '#15803d' : '#166534';
+                    ctx.fillRect(0, i * stripeH, w, stripeH + 1);
+                }
+
+                // Hafif saha ortası ışık gradyanı
+                const lightGrad = ctx.createRadialGradient(w * 0.5, h * 0.45, 20, w * 0.5, h * 0.45, Math.max(w, h) * 0.72);
+                lightGrad.addColorStop(0, 'rgba(187, 247, 208, 0.11)');
+                lightGrad.addColorStop(1, 'rgba(5, 46, 22, 0.34)');
+                ctx.fillStyle = lightGrad;
+                ctx.fillRect(0, 0, w, h);
+
+                // Saha çizgileri
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.72)';
+                ctx.lineWidth = 2.5;
+
+                const pad = 14;
+                const innerW = Math.max(40, w - pad * 2);
+                const innerH = Math.max(40, h - pad * 2);
+                ctx.strokeRect(pad, pad, innerW, innerH);
+
+                // Ceza sahası ve altılı pas kutusu
+                const boxW = Math.max(90, Math.min(w * 0.68, this.goal.width * 1.95));
+                const boxH = Math.max(75, Math.min(h * 0.24, 155));
+                const boxX = (w - boxW) * 0.5;
+                const boxY = Math.max(16, this.goal.y - 12);
+                ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+                const sixW = Math.max(60, boxW * 0.56);
+                const sixH = Math.max(36, boxH * 0.45);
+                const sixX = (w - sixW) * 0.5;
+                ctx.strokeRect(sixX, boxY, sixW, sixH);
+
+                // Ceza sahası yayı (güvenli pozitif yarıçap)
+                const arcRadius = Math.max(18, Math.min(46, boxW * 0.2));
+                ctx.beginPath();
+                ctx.arc(w * 0.5, boxY + boxH, arcRadius, 0.15 * Math.PI, 0.85 * Math.PI);
+                ctx.stroke();
+
+                // Penaltı noktası
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.beginPath();
+                ctx.arc(w * 0.5, boxY + boxH * 0.72, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // Kale arka ağı (esnek dalgalanma efektiyle)
+            drawGoalBackNet(ctx) {
+                const g = this.goal;
+                const leftX = g.x - g.width / 2;
+                const rightX = g.x + g.width / 2;
+                const topY = g.y - g.depth;
+
+                ctx.save();
+                const bulge = g.netRipple > 0 ? Math.sin(g.netRipple * Math.PI * 3) * 8 * g.netRipple : 0;
+
+                ctx.fillStyle = 'rgba(240, 253, 250, 0.14)';
+                ctx.beginPath();
+                ctx.moveTo(leftX, g.y);
+                ctx.lineTo(leftX + 6, topY - bulge);
+                ctx.lineTo(rightX - 6, topY - bulge);
+                ctx.lineTo(rightX, g.y);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.36)';
+                ctx.lineWidth = 1.2;
+
+                // Dikey ağ ipleri
+                const cols = 12;
+                for (let i = 0; i <= cols; i++) {
+                    const t = i / cols;
+                    const xBottom = leftX + t * g.width;
+                    const xTop = leftX + 6 + t * (g.width - 12);
+                    ctx.beginPath();
+                    ctx.moveTo(xBottom, g.y);
+                    ctx.lineTo(xTop, topY - bulge);
+                    ctx.stroke();
+                }
+
+                // Yatay ağ ipleri
+                const rows = 4;
+                for (let r = 0; r <= rows; r++) {
+                    const rt = r / rows;
+                    const yLine = g.y - rt * (g.depth + bulge);
+                    const inset = rt * 6;
+                    ctx.beginPath();
+                    ctx.moveTo(leftX + inset, yLine);
+                    ctx.lineTo(rightX - inset, yLine);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            // Kale ön direkleri ve üst direği
+            drawGoalFrontPosts(ctx) {
+                const g = this.goal;
+                const leftX = g.x - g.width / 2;
+                const rightX = g.x + g.width / 2;
+
+                ctx.save();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(leftX, g.y);
+                ctx.lineTo(rightX, g.y);
+                ctx.stroke();
+
+                // Sol ve sağ direk başlıkları
+                [leftX, rightX].forEach((px) => {
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.strokeStyle = '#0f172a';
+                    ctx.lineWidth = 1.8;
+                    ctx.beginPath();
+                    ctx.arc(px, g.y, g.postRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                });
+                ctx.restore();
+            }
+
+            // Kale köşelerindeki bonus hedefler
+            drawTargets(ctx) {
+                const tNow = performance.now() * 0.004;
+                this.targets.forEach((t) => {
+                    ctx.save();
+                    if (t.hit) {
+                        ctx.globalAlpha = 0.28;
+                        ctx.strokeStyle = '#cbd5e1';
+                        ctx.setLineDash([3, 3]);
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else {
+                        const pulseScale = 1 + Math.sin(tNow + t.pulse) * 0.07;
+                        ctx.translate(t.x, t.y);
+                        ctx.scale(pulseScale, pulseScale);
+
+                        ctx.fillStyle = 'rgba(14, 165, 233, 0.28)';
+                        ctx.strokeStyle = '#38bdf8';
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, t.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.fillStyle = '#e0f2fe';
+                        ctx.font = 'bold 10px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(t.points, 0, 0.5);
+                    }
+                    ctx.restore();
+                });
+            }
+
+            // Gerçekçi kaleci figürü: sabit duruş ve refleks uzanması (krampon, forma, omuzlar, eldiven, kafa)
+            drawGoalkeeper(ctx) {
+                const k = this.keeper;
+                const oppTeam = this.getOpponentTeam();
+                ctx.save();
+                ctx.translate(k.x, k.y);
+
+                // Kaleci sabitleme çizgisi / refleks menzili göstergesi
+                ctx.save();
+                ctx.translate(-k.diveOffsetX, 0);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(-k.reflexRange, 0);
+                ctx.lineTo(k.reflexRange, 0);
+                ctx.stroke();
+                ctx.restore();
+
+                // Refleks sırasında yatay uzanma eğimi
+                const tilt = (k.diveOffsetX / Math.max(1, k.reflexRange)) * 0.45;
+                ctx.rotate(tilt);
+
+                // Gölge
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
+                ctx.beginPath();
+                ctx.ellipse(0, 12, 22, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Kaleci eldivenleri ve kolları
+                const armReach = 17 + k.diveAnim * 9;
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(-13, -1);
+                ctx.lineTo(-armReach, -5);
+                ctx.moveTo(13, -1);
+                ctx.lineTo(armReach, -5);
+                ctx.stroke();
+
+                // Eldivenler
+                ctx.fillStyle = '#fef08a';
+                ctx.strokeStyle = '#ea580c';
+                ctx.lineWidth = 1.6;
+                [-armReach, armReach].forEach((gx) => {
+                    ctx.beginPath();
+                    ctx.arc(gx, -5, 5.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                });
+
+                // Kaleci omuz ve forması (rakip takım kaleci rengi)
+                ctx.fillStyle = oppTeam.keeperJersey || '#eab308';
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 14, 9.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Forma omuz şeridi
+                ctx.strokeStyle = oppTeam.trim || '#f97316';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(-9, -4);
+                ctx.lineTo(9, -4);
+                ctx.stroke();
+
+                // Kafa ve saç detayı
+                ctx.fillStyle = '#fed7aa';
+                ctx.strokeStyle = '#431407';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(0, -1, 7.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#334155';
+                ctx.beginPath();
+                ctx.arc(0, -3.5, 6.8, Math.PI, 0);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // Rakip baraj oyuncuları (rakip takım forması)
+            drawWallPlayers(ctx) {
+                const oppTeam = this.getOpponentTeam();
+                this.wall.forEach((def) => {
+                    const jumpY = def.jumpAnim > 0 ? -Math.sin(def.jumpAnim * Math.PI) * 8 : 0;
+                    if (def.jumpAnim > 0) {
+                        def.jumpAnim = Math.max(0, def.jumpAnim - 0.08);
+                    }
+                    this.drawRealisticOutfieldPlayer(ctx, {
+                        x: def.x,
+                        y: def.y + jumpY,
+                        facingAngle: def.facingAngle,
+                        stridePhase: 0,
+                        kickAnim: 0,
+                        jerseyColor: oppTeam.jersey,
+                        trimColor: oppTeam.trim,
+                        shortsColor: oppTeam.shorts
+                    });
+                });
+            }
+
+            // Takım arkadaşları (aktif takım forması)
+            drawTeammates(ctx) {
+                const activeTeam = this.getActiveTeam();
+                this.teammates.forEach((tm) => {
+                    this.drawRealisticOutfieldPlayer(ctx, {
+                        x: tm.x,
+                        y: tm.y,
+                        facingAngle: tm.facingAngle,
+                        stridePhase: tm.stridePhase,
+                        kickAnim: tm.kickAnim,
+                        jerseyColor: activeTeam.jersey,
+                        trimColor: activeTeam.trim,
+                        shortsColor: activeTeam.shorts
+                    });
+                });
+            }
+
+            // Aktif şutçu / pasör oyuncu (aktif takım forması)
+            drawShooterPlayer(ctx) {
+                if (!this.shooter) return;
+                const activeTeam = this.getActiveTeam();
+                this.drawRealisticOutfieldPlayer(ctx, {
+                    x: this.shooter.x,
+                    y: this.shooter.y,
+                    facingAngle: this.shooter.facingAngle,
+                    stridePhase: this.shooter.stridePhase,
+                    kickAnim: this.shooter.kickAnim,
+                    jerseyColor: activeTeam.jersey,
+                    trimColor: activeTeam.trim,
+                    shortsColor: activeTeam.shorts,
+                    isCaptain: true
+                });
+            }
+
+            // Üstten gerçekçi saha oyuncusu çizimi: krampon/bacak, omuz/forma, kollar, kafa
+            drawRealisticOutfieldPlayer(ctx, p) {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+
+                // Yerdeki gölge
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+                ctx.beginPath();
+                ctx.ellipse(0, 11, 15, 7, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.rotate(p.facingAngle - Math.PI / 2);
+
+                // Koşu adım ve şut vuruş açıları
+                const swing = Math.sin(p.stridePhase) * 5.5;
+                const kickOffset = p.kickAnim > 0 ? Math.sin(p.kickAnim * Math.PI) * 11 : 0;
+
+                // Sol ve sağ krampon / bacak
+                ctx.fillStyle = '#0f172a';
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.2;
+
+                // Sol ayak
+                ctx.beginPath();
+                ctx.ellipse(-6.5, 4 + swing, 3.6, 5.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Sağ ayak (şut sırasında öne savrulur)
+                ctx.beginPath();
+                ctx.ellipse(6.5, 4 - swing - kickOffset, 3.6, 5.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Kollar
+                ctx.strokeStyle = '#fed7aa';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(-11, -1);
+                ctx.lineTo(-13, 3 - swing * 0.5);
+                ctx.moveTo(11, -1);
+                ctx.lineTo(13, 3 + swing * 0.5);
+                ctx.stroke();
+
+                // Forma ve omuzlar
+                ctx.fillStyle = p.jerseyColor;
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 1.7;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 12.5, 8.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Forma göğüs/omuz şeridi
+                ctx.strokeStyle = p.trimColor;
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                ctx.moveTo(-8, -2);
+                ctx.lineTo(8, -2);
+                ctx.stroke();
+
+                // Kafa ve saç
+                ctx.fillStyle = '#fed7aa';
+                ctx.strokeStyle = '#431407';
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.arc(0, -1, 6.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.arc(0, -2.5, 5.8, Math.PI * 0.9, Math.PI * 2.1);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // Çizilen şut/falso veya pas yolunu ve hedef göstergesini çizer
+            drawAimPath(ctx) {
+                if (!this.isDrawing || this.smoothPath.length < 2) return;
+
+                const isPass = this.actionType === 'PASS';
+                ctx.save();
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                // Dış parıltı çizgisi
+                ctx.strokeStyle = isPass ? 'rgba(134, 239, 172, 0.35)' : 'rgba(253, 224, 71, 0.35)';
+                ctx.lineWidth = 9;
+                ctx.beginPath();
+                ctx.moveTo(this.smoothPath[0].x, this.smoothPath[0].y);
+                for (let i = 1; i < this.smoothPath.length; i++) {
+                    ctx.lineTo(this.smoothPath[i].x, this.smoothPath[i].y);
+                }
+                ctx.stroke();
+
+                // Ana yol çizgisi
+                ctx.strokeStyle = isPass ? '#4ade80' : '#facc15';
+                ctx.lineWidth = 4;
+                ctx.setLineDash(isPass ? [8, 6] : []);
+                ctx.beginPath();
+                ctx.moveTo(this.smoothPath[0].x, this.smoothPath[0].y);
+                for (let i = 1; i < this.smoothPath.length; i++) {
+                    ctx.lineTo(this.smoothPath[i].x, this.smoothPath[i].y);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Bitiş noktası halkası
+                const endPt = this.smoothPath[this.smoothPath.length - 1];
+                ctx.fillStyle = isPass ? '#22c55e' : '#eab308';
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(endPt.x, endPt.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Bilgi etiketi (PAS veya FALSO / ŞUT)
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(endPt.x - 42, endPt.y - 28, 84, 18);
+                ctx.fillStyle = isPass ? '#86efac' : '#fde047';
+                const label = isPass
+                    ? 'PAS VER'
+                    : Math.abs(this.curveFactor) > 0.3
+                    ? `FALSO ${this.curveFactor > 0 ? 'SAĞ' : 'SOL'}`
+                    : 'ŞUT ÇEK';
+                ctx.fillText(label, endPt.x, endPt.y - 15);
+
+                ctx.restore();
+            }
+
+            // Gerçekçi futbol topu ve hareket izi
+            drawBall(ctx) {
+                // Top izi
+                if (this.ball.trail.length > 1) {
+                    ctx.save();
+                    for (let i = 0; i < this.ball.trail.length; i++) {
+                        const pt = this.ball.trail[i];
+                        const ratio = (i + 1) / this.ball.trail.length;
+                        ctx.fillStyle = `rgba(255, 255, 255, ${ratio * 0.24})`;
+                        ctx.beginPath();
+                        ctx.arc(pt.x, pt.y, this.ball.radius * ratio * 0.85, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+
+                // Nişan alırken top çevresinde davetkar halka
+                if (this.state === 'AIMING' && !this.isDrawing) {
+                    ctx.save();
+                    const pulse = 1 + Math.sin(performance.now() * 0.006) * 0.14;
+                    ctx.strokeStyle = 'rgba(253, 224, 71, 0.72)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(this.ball.x, this.ball.y, (this.ball.radius + 7) * pulse, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                ctx.save();
+                ctx.translate(this.ball.x, this.ball.y);
+
+                // Top gölgesi
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
+                ctx.beginPath();
+                ctx.ellipse(2, 5, this.ball.radius * 0.95, this.ball.radius * 0.75, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.rotate(this.ball.rotation);
+
+                // Beyaz deri gövde
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 1.6;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.ball.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Orta siyah beşgen ve çevresi
+                ctx.fillStyle = '#111827';
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const a = (i * Math.PI * 2) / 5 - Math.PI / 2;
+                    const px = Math.cos(a) * 4.2;
+                    const py = Math.sin(a) * 4.2;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fill();
+
+                // Kenar panel parçaları
+                for (let i = 0; i < 5; i++) {
+                    const a = (i * Math.PI * 2) / 5 - Math.PI / 2;
+                    const ex = Math.cos(a) * (this.ball.radius - 1.5);
+                    const ey = Math.sin(a) * (this.ball.radius - 1.5);
+                    ctx.beginPath();
+                    ctx.arc(ex, ey, 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+
+            drawParticles(ctx) {
+                this.particles.forEach((p) => {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, p.life);
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+            }
+
+            drawFloatingTexts(ctx) {
+                this.floatingTexts.forEach((ft) => {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, ft.life);
+                    ctx.font = 'bold 13px Fredoka, Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#000000';
+                    ctx.fillText(ft.text, ft.x + 1.5, ft.y + 1.5);
+                    ctx.fillStyle = ft.color;
+                    ctx.fillText(ft.text, ft.x, ft.y);
+                    ctx.restore();
+                });
+            }
+
+            /**
+             * ARAYÜZ PENCERELERİ, OLAYLAR VE ANA DÖNGÜ
+             */
+            showEventOverlay(title, subtitle, colorClass = 'text-yellow-400') {
+                const overlay = document.getElementById('eventOverlay');
+                const titleEl = document.getElementById('eventText');
+                const subEl = document.getElementById('eventSubText');
+                titleEl.textContent = title;
+                titleEl.className = `font-game font-extrabold text-5xl sm:text-7xl md:text-8xl ${colorClass} drop-shadow-[0_6px_0_rgba(0,0,0,0.85)] tracking-wider text-center animate-goal`;
+                subEl.textContent = subtitle;
+                overlay.classList.remove('hidden');
+            }
+
+            hideEventOverlay() {
+                document.getElementById('eventOverlay').classList.add('hidden');
+            }
+
+            showLevelCompleteModal() {
+                this.state = 'LEVEL_END';
+                document.getElementById('modalIcon').textContent = '🏆';
+                document.getElementById('modalTitle').textContent = 'GOOOL! Bölüm Tamamlandı';
+                document.getElementById('modalDesc').textContent = 'Harika vuruş! Yeni bölüm ve daha zorlu savunma seni bekliyor.';
+                document.getElementById('modalLevelScore').textContent = `+${this.levelScore}`;
+                document.getElementById('modalTotalScore').textContent = this.score;
+
+                const primaryBtn = document.getElementById('modalBtnPrimary');
+                primaryBtn.textContent = 'Sonraki Bölüm ➔';
+                primaryBtn.onclick = () => {
+                    this.loadLevel(this.currentLevelIndex + 1);
+                };
+
+                const secBtn = document.getElementById('modalBtnSecondary');
+                secBtn.textContent = 'Tekrar Oyna';
+                secBtn.onclick = () => {
+                    this.loadLevel(this.currentLevelIndex);
+                };
+
+                document.getElementById('modalOverlay').classList.remove('hidden');
+            }
+
+            showGameOverModal() {
+                this.state = 'LEVEL_END';
+                document.getElementById('modalIcon').textContent = '🥅';
+                document.getElementById('modalTitle').textContent = 'Şut Hakların Bitti!';
+                document.getElementById('modalDesc').textContent = 'Falso kavisi ve takım arkadaşlarına pasları kullanarak tekrar dene!';
+                document.getElementById('modalLevelScore').textContent = `+${this.levelScore}`;
+                document.getElementById('modalTotalScore').textContent = this.score;
+
+                const primaryBtn = document.getElementById('modalBtnPrimary');
+                primaryBtn.textContent = 'Yeniden Dene ↻';
+                primaryBtn.onclick = () => {
+                    this.loadLevel(this.currentLevelIndex);
+                };
+
+                const secBtn = document.getElementById('modalBtnSecondary');
+                secBtn.textContent = 'Bölüm 1';
+                secBtn.onclick = () => {
+                    this.loadLevel(0);
+                };
+
+                document.getElementById('modalOverlay').classList.remove('hidden');
+            }
+
+            showTournamentWinnerModal() {
+                this.state = 'LEVEL_END';
+                let winnerText = 'Berabere!';
+                if (this.p1Goals > this.p2Goals) {
+                    winnerText = `🏆 Oyuncu 1 (${this.team1.name}) Kazandı!`;
+                } else if (this.p2Goals > this.p1Goals) {
+                    winnerText = `🏆 Oyuncu 2 (${this.team2.name}) Kazandı!`;
+                }
+
+                document.getElementById('modalIcon').textContent = '🏆';
+                document.getElementById('modalTitle').textContent = winnerText;
+                document.getElementById('modalDesc').textContent = `Skor: ${this.team1.short} ${this.p1Goals} - ${this.p2Goals} ${this.team2.short}`;
+                document.getElementById('modalLevelScore').textContent = `P1: ${this.p1Goals} | P2: ${this.p2Goals}`;
+                document.getElementById('modalTotalScore').textContent = `P1 ${this.p1Score} - ${this.p2Score} P2`;
+
+                const primaryBtn = document.getElementById('modalBtnPrimary');
+                primaryBtn.textContent = 'Yeni Turnuva Maçı ➔';
+                primaryBtn.onclick = () => {
+                    this.p1Goals = 0;
+                    this.p2Goals = 0;
+                    this.p1Score = 0;
+                    this.p2Score = 0;
+                    this.activePlayer = 1;
+                    this.tournamentRound += 1;
+                    this.loadLevel((this.currentLevelIndex + 1) % LEVELS.length);
+                };
+
+                const secBtn = document.getElementById('modalBtnSecondary');
+                secBtn.textContent = 'Cihaz & Takım Seçimi';
+                secBtn.onclick = () => {
+                    this.hideModal();
+                    document.getElementById('startDeviceModal').classList.remove('hidden');
+                };
+
+                document.getElementById('modalOverlay').classList.remove('hidden');
+            }
+
+            renderLevelGrid() {
+                const grid = document.getElementById('levelGrid');
+                if (!grid) return;
+                grid.innerHTML = '';
+
+                const totalToShow = Math.max(LEVELS.length, this.unlockedLevels);
+                for (let i = 0; i < totalToShow; i++) {
+                    const cfg = this.getLevelConfig(i);
+                    const isUnlocked = i + 1 <= this.unlockedLevels;
+                    const isCurrent = i === this.currentLevelIndex;
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `p-3 rounded-2xl border text-left transition-all ${
+                        isCurrent
+                            ? 'bg-amber-500/25 border-amber-400 text-white'
+                            : isUnlocked
+                            ? 'bg-emerald-900/70 hover:bg-emerald-800 border-emerald-600/60 text-emerald-100 cursor-pointer'
+                            : 'bg-black/35 border-white/10 text-gray-500 cursor-not-allowed'
+                    }`;
+                    btn.disabled = !isUnlocked;
+                    btn.innerHTML = `
+                        <div class="flex items-center justify-between font-game font-bold text-sm sm:text-base">
+                            <span>Bölüm ${cfg.id}</span>
+                            <span>${isUnlocked ? (isCurrent ? '★' : '➔') : '🔒'}</span>
+                        </div>
+                        <div class="text-xs truncate mt-0.5 opacity-80">${cfg.title.replace(/^Bölüm \d+:\s*/, '')}</div>
+                    `;
+                    if (isUnlocked) {
+                        btn.addEventListener('click', () => {
+                            document.getElementById('levelSelectModal').classList.add('hidden');
+                            this.loadLevel(i);
+                        });
+                    }
+                    grid.appendChild(btn);
+                }
+            }
+
+            bindEvents() {
+                this.canvas.addEventListener('mousedown', (e) => this.onPointerDown(e));
+                window.addEventListener('mousemove', (e) => this.onPointerMove(e));
+                window.addEventListener('mouseup', () => this.onPointerUp());
+
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.onPointerDown(e);
+                }, { passive: false });
+                window.addEventListener('touchmove', (e) => {
+                    if (this.isDrawing) e.preventDefault();
+                    this.onPointerMove(e);
+                }, { passive: false });
+                window.addEventListener('touchend', () => this.onPointerUp());
+
+                window.addEventListener('resize', () => this.resize());
+
+                document.getElementById('btnRestart').addEventListener('click', () => {
+                    this.loadLevel(this.currentLevelIndex);
+                });
+
+                document.getElementById('btnDownload').addEventListener('click', () => {
+                    try {
+                        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+                        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'ciz-ve-gol-at-futbol.html';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        setTimeout(() => URL.revokeObjectURL(url), 1000);
+                        this.addFloatingText(this.width * 0.5, this.height * 0.5, 'OYUN İNDİRİLDİ!', '#fde047');
+                    } catch (err) {
+                        console.error('İndirme hatası:', err);
+                        this.addFloatingText(this.width * 0.5, this.height * 0.5, 'İndirme başarısız', '#fca5a5');
+                    }
+                });
+
+                document.getElementById('btnSound').addEventListener('click', () => {
+                    const enabled = sound.toggle();
+                    document.getElementById('iconSoundOn').classList.toggle('hidden', !enabled);
+                    document.getElementById('iconSoundOff').classList.toggle('hidden', enabled);
+                });
+
+                document.getElementById('btnLevels').addEventListener('click', () => {
+                    this.renderLevelGrid();
+                    document.getElementById('levelSelectModal').classList.remove('hidden');
+                });
+
+                document.getElementById('closeLevelSelect').addEventListener('click', () => {
+                    document.getElementById('levelSelectModal').classList.add('hidden');
+                });
+
+                // Cihaz ve turnuva başlangıç ekranı olayları
+                document.getElementById('btnDeviceSwitch').addEventListener('click', () => {
+                    this.populateTeamSelects();
+                    document.getElementById('startDeviceModal').classList.remove('hidden');
+                });
+
+                document.getElementById('selectMobileBtn').addEventListener('click', () => {
+                    this.applyDeviceSettings('MOBILE');
+                });
+
+                document.getElementById('selectPcBtn').addEventListener('click', () => {
+                    this.applyDeviceSettings('PC');
+                });
+
+                const setModeUI = (mode) => {
+                    this.gameMode = mode;
+                    const soloBtn = document.getElementById('modeSoloBtn');
+                    const p2Btn = document.getElementById('mode2pBtn');
+                    const p2Box = document.getElementById('p2TeamBox');
+
+                    if (mode === 'SOLO') {
+                        soloBtn.className = 'py-2.5 px-3 rounded-2xl border border-amber-400 bg-amber-500/20 text-amber-200 font-semibold text-xs sm:text-sm transition cursor-pointer';
+                        p2Btn.className = 'py-2.5 px-3 rounded-2xl border border-emerald-600/50 bg-emerald-900/50 text-emerald-100 hover:border-emerald-400 font-semibold text-xs sm:text-sm transition cursor-pointer';
+                        p2Box.classList.add('hidden');
+                    } else {
+                        p2Btn.className = 'py-2.5 px-3 rounded-2xl border border-amber-400 bg-amber-500/20 text-amber-200 font-semibold text-xs sm:text-sm transition cursor-pointer';
+                        soloBtn.className = 'py-2.5 px-3 rounded-2xl border border-emerald-600/50 bg-emerald-900/50 text-emerald-100 hover:border-emerald-400 font-semibold text-xs sm:text-sm transition cursor-pointer';
+                        p2Box.classList.remove('hidden');
+                    }
+                };
+
+                document.getElementById('modeSoloBtn').addEventListener('click', () => setModeUI('SOLO'));
+                document.getElementById('mode2pBtn').addEventListener('click', () => setModeUI('TOURNAMENT_2P'));
+
+                const setLeagueUI = (league) => {
+                    this.leagueFilter = league;
+                    const allBtn = document.getElementById('leagueAllBtn');
+                    const superBtn = document.getElementById('leagueSuperBtn');
+                    const euroBtn = document.getElementById('leagueEuroBtn');
+
+                    const activeCls = 'px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-400 text-emerald-950 cursor-pointer';
+                    const idleCls = 'px-2.5 py-1 rounded-xl text-xs font-semibold bg-emerald-800 text-emerald-100 hover:bg-emerald-700 cursor-pointer';
+
+                    allBtn.className = league === 'ALL' ? activeCls : idleCls;
+                    superBtn.className = league === 'SUPER_LIG' ? activeCls : idleCls;
+                    euroBtn.className = league === 'EUROPE' ? activeCls : idleCls;
+
+                    this.populateTeamSelects();
+                };
+
+                document.getElementById('leagueAllBtn').addEventListener('click', () => setLeagueUI('ALL'));
+                document.getElementById('leagueSuperBtn').addEventListener('click', () => setLeagueUI('SUPER_LIG'));
+                document.getElementById('leagueEuroBtn').addEventListener('click', () => setLeagueUI('EUROPE'));
+
+                document.getElementById('p1TeamSelect').addEventListener('change', (e) => {
+                    const found = TEAMS.find((t) => t.id === e.target.value);
+                    if (found) this.team1 = found;
+                });
+
+                document.getElementById('p2TeamSelect').addEventListener('change', (e) => {
+                    const found = TEAMS.find((t) => t.id === e.target.value);
+                    if (found) this.team2 = found;
+                });
+
+                document.getElementById('startMatchBtn').addEventListener('click', () => {
+                    const p1Val = document.getElementById('p1TeamSelect').value;
+                    const p2Val = document.getElementById('p2TeamSelect').value;
+                    this.team1 = TEAMS.find((t) => t.id === p1Val) || this.team1;
+                    this.team2 = TEAMS.find((t) => t.id === p2Val) || this.team2;
+
+                    this.p1Goals = 0;
+                    this.p2Goals = 0;
+                    this.p1Score = 0;
+                    this.p2Score = 0;
+                    this.activePlayer = 1;
+                    this.tournamentRound = 1;
+
+                    document.getElementById('startDeviceModal').classList.add('hidden');
+                    this.loadLevel(this.currentLevelIndex);
+                });
+
+                this.populateTeamSelects();
+                this.applyDeviceSettings(this.deviceMode);
+            }
+
+            resize() {
+                const parent = this.canvas.parentElement;
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                this.width = Math.max(260, parent.clientWidth || window.innerWidth);
+                this.height = Math.max(360, parent.clientHeight || window.innerHeight);
+
+                this.canvas.width = Math.floor(this.width * dpr);
+                this.canvas.height = Math.floor(this.height * dpr);
+                this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                if (this.state === 'AIMING' && !this.isDrawing) {
+                    const cfg = this.getLevelConfig(this.currentLevelIndex);
+                    this.setupEntities(cfg);
+                    this.resetBallForShot(cfg);
+                }
+            }
+
+            loop() {
+                try {
+                    this.update();
+                    this.draw();
+                } catch (err) {
+                    console.error('Oyun döngüsü hatası:', err);
+                }
+                requestAnimationFrame(() => this.loop());
+            }
+        }
+
+        window.onload = function () {
+            const game = new DrawSoccerGame();
+            game.loop();
+        };
+    </script>
+
+</body></html>
